@@ -15,6 +15,7 @@ import (
 
 	customerApiModule "project1.v0/api_gateway/internal/customers-api/module"
 	customerModule "project1.v0/api_gateway/internal/customers/module"
+	"project1.v0/api_gateway/internal/health"
 
 	dbMapper "project1.v0/mappers/dto_db"
 	validatorХ "project1.v0/pkg/validator_x"
@@ -24,6 +25,7 @@ type AppDeps struct {
 	*configs.Config
 	customerModule.CustomerModuleConstructor
 	customerApiModule.CustomerApiModuleConstructor
+	health.HealthApiModuleConstructor
 	db.NewDbConstructor
 	validatorХ.ValidatorXModuleConstructor
 }
@@ -78,6 +80,8 @@ func NewApp(deps AppDeps) *AppReturningValue {
 	stack := httpMdw.Chain(
 	// cors, logging, etc
 	)
+
+	deps.HealthApiModuleConstructor(health.HealthApiModuleDeps{Router: router})
 
 	customerModule := deps.CustomerModuleConstructor(customerModule.CustomerModuleDeps{
 		Db:                 db,

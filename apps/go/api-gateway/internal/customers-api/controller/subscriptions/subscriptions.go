@@ -27,7 +27,6 @@ func NewCustomerSubsciptionsApiController(deps CustomerSubsciptionsApiController
 
 	///////////
 	//WEB
-	deps.Router.Handle("GET /health", mdw.Chain()(http.HandlerFunc(handler.Health())))
 
 	deps.Router.Handle(fmt.Sprintf("POST /%s",
 		customerHttpContract.PathSubscriptions,
@@ -39,33 +38,17 @@ func NewCustomerSubsciptionsApiController(deps CustomerSubsciptionsApiController
 		](handler.validator),
 	)(http.HandlerFunc(handler.CreateSubscription())))
 
-	// test of mdw
-
-	// deps.Router.Handle(
-	// 	//pat,
-	// 	fmt.Sprintf("POST /%s",
-	// 		customerHttpContract.PathSubscriptions,
-	// 	),
-	// 	// fmt.Sprintf("POST /%s/{%s}/{%s}",
-	// 	// 	customerHttpContract.PathSubscriptions,
-	// 	// 	customerHttpContract.ParamUserID,
-	// 	// 	customerHttpContract.ParamStartDate,
-	// 	// ),
-	// 	mdw.Chain(
-	// 		mdw.HttpValidationWithCtx[
-	// 			customerHttpContract.CustomerSubscriptionCreateRequest,
-	// 			//customerHttpContract.CustomerSubscriptionCreateQuery,
-	// 			//customerHttpContract.CustomerSubscriptionCreatePath,
-	// 			struct{},
-	// 			struct{},
-	// 		](handler.validator),
-	// 	)(http.HandlerFunc(handler.CreateSubscription())))
-
 	deps.Router.Handle(
 		fmt.Sprintf("PATCH /%s/{%s}",
 			customerHttpContract.PathSubscriptions,
 			customerHttpContract.PathID,
-		), mdw.Chain()(http.HandlerFunc(handler.UpdateSubscription())))
+		), mdw.Chain(
+			mdw.HttpValidationWithCtx[
+				customerHttpContract.CustomerSubscriptionUpdateRequest,
+				customerHttpContract.CustomerSubscriptionUpdateQuery,
+				customerHttpContract.CustomerSubscriptionUpdatePath,
+			](handler.validator),
+		)(http.HandlerFunc(handler.UpdateSubscription())))
 
 	// deps.Router.Handle(fmt.Sprintf("GET /%s",
 	// 	customerHttpContract.PathSubscriptions,
@@ -253,17 +236,9 @@ func (h *CustomerSubsciptionsApiController) CreateSubscription() http.HandlerFun
 func (h *CustomerSubsciptionsApiController) UpdateSubscription() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		body, _ := mdw.GetFromContext[customerHttpContract.CustomerSubscriptionUpdateRequest](r.Context())
-		query, _ := mdw.GetFromContext[customerHttpContract.CustomerSubscriptionUpdateQuery](r.Context())
+		path, _ := mdw.GetFromContext[customerHttpContract.CustomerSubscriptionUpdatePath](r.Context())
 
-		// idStr := r.PathValue("id")
-		// _, err = uuid.Parse(idStr)
-		// if err != nil {
-		// 	code := customerHttpContract.HttpStatusForError(customerDomainContract.ErrInvalidID)
-		// 	resp.WriteError(w, customerDomainContract.ErrInvalidID.Error(), code)
-		// 	return
-		// }
-
-		brokerReq := mapper.CustomerSubscriptionUpdateRequest_HttpToBroker(*query.ID, body)
+		brokerReq := mapper.CustomerSubscriptionUpdateRequest_HttpToBroker(*path.ID, body)
 
 		_, err := h.service.Update(brokerReq)
 		if err != nil {
