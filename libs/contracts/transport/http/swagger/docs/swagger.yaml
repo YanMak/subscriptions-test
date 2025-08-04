@@ -1,0 +1,191 @@
+definitions:
+  customerHttpContract.CustomerSubscriptionCreateRequest:
+    properties:
+      end_date:
+        description: '@example "07-2026"'
+        type: string
+      price:
+        description: '@example 400'
+        type: integer
+      service_name:
+        description: '@example "Yandex Plus"'
+        type: string
+      start_date:
+        description: '@example "07-2025"'
+        type: string
+      user_id:
+        description: '@example "60601fee-2bf1-4721-ae6f-7636e79a0cba"'
+        type: string
+    required:
+    - price
+    - service_name
+    - start_date
+    - user_id
+    type: object
+  customerHttpContract.CustomerSubscriptionCreateResponse:
+    properties:
+      id:
+        type: string
+    type: object
+  customerHttpContract.CustomerSubscriptionResponse:
+    properties:
+      end_date:
+        type: string
+      id:
+        type: string
+      price:
+        type: integer
+      service_name:
+        type: string
+      start_date:
+        type: string
+      user_id:
+        type: string
+    type: object
+  customerHttpContract.CustomerSubscriptionUpdateRequest:
+    properties:
+      end_date:
+        description: '@example "07-2026"'
+        type: string
+      price:
+        description: '@example 400'
+        type: integer
+      service_name:
+        description: '@example "Yandex Plus"'
+        type: string
+      start_date:
+        description: '@example "07-2025"'
+        type: string
+    type: object
+  httpContractCommons.ErrorResponse:
+    properties:
+      code:
+        type: integer
+      message:
+        type: string
+    type: object
+info:
+  contact:
+    email: 89269167763@yandex.ru.com
+    name: Yan
+  description: REST service of online subscriptions at present moment ()
+  title: API-Gateway
+  version: "1.0"
+paths:
+  /subscriptions:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Payload to create subscription
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/customerHttpContract.CustomerSubscriptionCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/customerHttpContract.CustomerSubscriptionCreateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpContractCommons.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpContractCommons.ErrorResponse'
+      summary: Create subscription
+      tags:
+      - subscriptions
+  /subscriptions/{id}:
+    delete:
+      parameters:
+      - description: subscription ID (UUID)
+        example: 4b70f8d6-c702-4e6e-9c65-2ae0e3bb0e5c
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpContractCommons.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpContractCommons.ErrorResponse'
+      summary: Delete subscription by ID
+      tags:
+      - subscriptions
+    get:
+      parameters:
+      - description: subscription ID (UUID)
+        example: 60601fee-2bf1-4721-ae6f-7636e79a0cba
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/customerHttpContract.CustomerSubscriptionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpContractCommons.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpContractCommons.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpContractCommons.ErrorResponse'
+      summary: Get subscription by id
+      tags:
+      - subscriptions
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: subscription ID (UUID)
+        example: 4b70f8d6-c702-4e6e-9c65-2ae0e3bb0e5c
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Fields to update
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/customerHttpContract.CustomerSubscriptionUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpContractCommons.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpContractCommons.ErrorResponse'
+      summary: Update subscription by ID
+      tags:
+      - subscriptions
+swagger: "2.0"
