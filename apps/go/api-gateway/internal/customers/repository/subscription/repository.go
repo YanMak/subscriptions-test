@@ -4,6 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
+	"reflect"
+	"strings"
 
 	model "project1.v0/api_gateway/internal/customers/models/subscription"
 	customerDomainContract "project1.v0/contracts/domain/customer"
@@ -61,19 +64,19 @@ func (r *CustomerSubscriptionRepository) CreateWithTx(ctx context.Context, s *mo
 // 	return entity, nil
 // }
 
-// func (r *CustomerSubscriptionRepository) UpdateWithTx(ctx context.Context, s *model.CustomerSubscription, fields []string) error {
+func (r *CustomerSubscriptionRepository) UpdateWithTx(ctx context.Context, s *model.CustomerSubscription, fields []string) error {
 
-// 	err := db_postgresql.WithTx(r.db.DB, ctx, nil, func(tx *sql.Tx) error {
-// 		//return r.Update(ctx, tx, s, fields)
-// 		err := r.Update(ctx, tx, s, fields)
-// 		return err
-// 	})
-// 	if err != nil {
-// 		// error processing on rollback
-// 	}
+	err := db_postgresql.WithTx(r.db.DB, ctx, nil, func(tx *sql.Tx) error {
+		//return r.Update(ctx, tx, s, fields)
+		err := r.Update(ctx, tx, s, fields)
+		return err
+	})
+	if err != nil {
+		// error processing on rollback
+	}
 
-// 	return nil
-// }
+	return nil
+}
 
 func (r *CustomerSubscriptionRepository) DeleteWithTx(ctx context.Context, id string) error {
 
@@ -158,38 +161,56 @@ func (r *CustomerSubscriptionRepository) Create(ctx context.Context, tx *sql.Tx,
 // 	return &s, err
 // }
 
-// func (r *CustomerSubscriptionRepository) Update(ctx context.Context, tx *sql.Tx, s *model.CustomerSubscription, fields []string) error {
+func (r *CustomerSubscriptionRepository) Update(ctx context.Context, tx *sql.Tx, s *model.CustomerSubscription, fields []string) error {
 
-// 	if len(fields) == 0 {
-// 		return nil
-// 	}
+	if len(fields) == 0 {
+		return nil
+	}
 
-// 	setClauses := make([]string, 0, len(fields))
-// 	args := make([]interface{}, 0, len(fields)+1)
-// 	val := reflect.ValueOf(s).Elem()
+	setClauses := make([]string, 0, len(fields))
+	args := make([]interface{}, 0, len(fields)+1)
 
-// 	for idx, field := range fields {
-// 		dbFieldName := r.DtosToDbMapService.GetFieldMapping(tableName, field)
-// 		setClauses = append(setClauses, fmt.Sprintf("%s=$%d", dbFieldName, idx+1))
+	mapNameToDb, err := r.decoder.GetDbFieldsStruct(s)
+	if err != nil {
+		return err
+	}
+	val := reflect.ValueOf(s).Elem()
 
-// 		fieldVal := val.FieldByName(field)
-// 		if !fieldVal.IsValid() {
-// 			return fmt.Errorf("field not found: %s", field)
-// 		}
-// 		args = append(args, fieldVal.Interface())
-// 	}
+	for idx, field := range fields {
+		dbFieldName := mapNameToDb[field]
+		setClauses = append(setClauses, fmt.Sprintf("%s=$%d", dbFieldName, idx+1))
 
-// 	query := fmt.Sprintf(
-// 		`UPDATE subscriptions SET %s WHERE id=$%d`,
-// 		strings.Join(setClauses, ", "),
-// 		len(fields)+1,
-// 	)
-// 	args = append(args, s.ID)
+		fieldVal := val.FieldByName(field)
+		if !fieldVal.IsValid() {
+			return fmt.Errorf("field not found: %s", field)
+		}
+		args = append(args, fieldVal.Interface())
+	}
 
-// 	_, err := tx.ExecContext(ctx, query, args...)
-// 	return err
+	// val := reflect.ValueOf(s).Elem()
 
-// }
+	// for idx, field := range fields {
+	// 	dbFieldName := r.DtosToDbMapService.GetFieldMapping(tableName, field)
+	// 	setClauses = append(setClauses, fmt.Sprintf("%s=$%d", dbFieldName, idx+1))
+
+	// 	fieldVal := val.FieldByName(field)
+	// 	if !fieldVal.IsValid() {
+	// 		return fmt.Errorf("field not found: %s", field)
+	// 	}
+	// 	args = append(args, fieldVal.Interface())
+	// }
+
+	query := fmt.Sprintf(
+		`UPDATE subscriptions SET %s WHERE id=$%d`,
+		strings.Join(setClauses, ", "),
+		len(fields)+1,
+	)
+	args = append(args, s.ID)
+
+	_, err = tx.ExecContext(ctx, query, args...)
+	return err
+
+}
 
 // func (r *CustomerSubscriptionRepository) dbFieldName(field string) (string, error) {
 // 	for _, fi := range r.decoder.Fields {

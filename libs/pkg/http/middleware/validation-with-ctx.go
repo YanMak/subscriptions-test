@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 	"reflect"
 
@@ -25,7 +24,7 @@ func HttpValidationWithCtx[BodyT any, QueryT any, PathT any](vld *validatorХ.Va
 			// 1. Body
 			if typ := reflect.TypeOf((*BodyT)(nil)).Elem(); typ != reflect.TypeOf(struct{}{}) {
 				var bodyT BodyT
-				if err := decodeBody(r, &bodyT); err != nil {
+				if err := decoder.DecodeBody(r, &bodyT); err != nil {
 					http.Error(w, "invalid body: "+err.Error(), http.StatusBadRequest)
 					return
 				}
@@ -53,8 +52,7 @@ func HttpValidationWithCtx[BodyT any, QueryT any, PathT any](vld *validatorХ.Va
 			// 3. Path
 			if typ := reflect.TypeOf((*PathT)(nil)).Elem(); typ != reflect.TypeOf(struct{}{}) {
 				var pathT PathT
-				pathParams := extractPathParams(r)
-				if err := dcd.MapPathParamsToStruct(pathParams, &pathT); err != nil {
+				if err := dcd.MapPathParamsToStruct(r, &pathT); err != nil {
 					http.Error(w, "path parse: "+err.Error(), http.StatusBadRequest)
 					return
 				}
@@ -68,14 +66,4 @@ func HttpValidationWithCtx[BodyT any, QueryT any, PathT any](vld *validatorХ.Va
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
-}
-
-func decodeBody[T any](r *http.Request, out *T) error {
-	defer r.Body.Close()
-	return json.NewDecoder(r.Body).Decode(out)
-}
-
-func extractPathParams(r *http.Request) map[string]string {
-	// Реализуй под свой роутер (например, chi или gorilla/mux)
-	return map[string]string{}
 }

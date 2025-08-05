@@ -34,11 +34,13 @@ type CustomerSubscriptionUpdateRequest struct {
 	StartDate   *string `json:"start_date,omitempty" validate:"omitempty,date_format_mm_yyyy"` // @example "07-2025"
 	EndDate     *string `json:"end_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`   // @example "07-2026"
 }
-type CustomerSubscriptionUpdateQuery struct { // @example 400
-	ID *string `query:"id" validate:"uuid"` // @example
+type CustomerSubscriptionUpdatePath struct {
+	ID        *string `path:"id" validate:"uuid"`                        // @example 400
+	StartDate *string `path:"start_date" validate:"date_format_mm_yyyy"` // @example "07-2025"
 }
-type CustomerSubscriptionUpdatePath struct { // @example 400
-	ID *string `path:"user_id" validate:"uuid"` // @example "60601fee-2bf1-4721-ae6f-7636e79a0cba"
+type CustomerSubscriptionUpdateQuery struct {
+	UserID    *string `query:"user_id" validate:"uuid"`                                       // @example "60601fee-2bf1-4721-ae6f-7636e79a0cba"
+	StartDate *string `query:"start_date,omitempty" validate:"omitempty,date_format_mm_yyyy"` // @example "07-2025"
 }
 
 // Response is empty

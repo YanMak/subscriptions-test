@@ -13,7 +13,7 @@ type ICustomerSubscriptionService interface {
 
 	// Delete(customerBrokerContract.CustomerSubscriptionDeleteRequest) (customerBrokerContract.CustomerSubscriptionDeleteResponse, error)
 
-	//Update(dto *customerBrokerContract.CustomerSubscriptionUpdateRequest) (customerBrokerContract.CustomerSubscriptionUpdateResponse, error)
+	Update(dto *customerBrokerContract.CustomerSubscriptionUpdateRequest) (customerBrokerContract.CustomerSubscriptionUpdateResponse, error)
 
 	// TotalCost(dto *customerBrokerContract.CustomerSubscriptionTotalCostRequest) (customerBrokerContract.CustomerSubscriptionTotalCostResponse, error)
 }

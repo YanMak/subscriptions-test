@@ -42,20 +42,21 @@ func NewCustomerSubsciptionsApiController(deps CustomerSubsciptionsApiController
 		),
 	)(http.HandlerFunc(handler.CreateSubscription())))
 
-	// deps.Router.Handle(
-	// 	fmt.Sprintf("PATCH /%s/{%s}",
-	// 		customerHttpContract.PathSubscriptions,
-	// 		customerHttpContract.PathID,
-	// 	), mdw.Chain(
-	// 		mdw.HttpValidationWithCtx[
-	// 			customerHttpContract.CustomerSubscriptionUpdateRequest,
-	// 			customerHttpContract.CustomerSubscriptionUpdateQuery,
-	// 			customerHttpContract.CustomerSubscriptionUpdatePath,
-	// 		](
-	// 			handler.validator,
-	// 			handler.decoder,
-	// 		),
-	// 	)(http.HandlerFunc(handler.UpdateSubscription())))
+	deps.Router.Handle(
+		fmt.Sprintf("PATCH /%s/{%s}/{%s}",
+			customerHttpContract.PathSubscriptions,
+			customerHttpContract.PathID,
+			customerHttpContract.ParamStartDate,
+		), mdw.Chain(
+			mdw.HttpValidationWithCtx[
+				customerHttpContract.CustomerSubscriptionUpdateRequest,
+				customerHttpContract.CustomerSubscriptionUpdateQuery,
+				customerHttpContract.CustomerSubscriptionUpdatePath,
+			](
+				handler.validator,
+				handler.decoder,
+			),
+		)(http.HandlerFunc(handler.UpdateSubscription())))
 
 	// deps.Router.Handle(fmt.Sprintf("GET /%s",
 	// 	customerHttpContract.PathSubscriptions,
@@ -229,33 +230,35 @@ func (h *CustomerSubsciptionsApiController) CreateSubscription() http.HandlerFun
 // 	}
 // }
 
-// // UpdateSubscription godoc
-// // @Summary Update subscription by ID
-// // @Tags subscriptions
-// // @Accept json
-// // @Produce json
-// // @Param id path string true "subscription ID (UUID)" example(4b70f8d6-c702-4e6e-9c65-2ae0e3bb0e5c)
-// // @Param payload body customerHttpContract.CustomerSubscriptionUpdateRequest true "Fields to update"
-// // @Success 204 "no content"
-// // @Failure 400 {object} httpContractCommons.ErrorResponse
-// // @Failure 500 {object} httpContractCommons.ErrorResponse
-// // @Router /subscriptions/{id} [patch]
-// func (h *CustomerSubsciptionsApiController) UpdateSubscription() http.HandlerFunc {
-// 	return func(w http.ResponseWriter, r *http.Request) {
-// 		body, _ := mdw.GetFromContext[customerHttpContract.CustomerSubscriptionUpdateRequest](r.Context())
-// 		path, _ := mdw.GetFromContext[customerHttpContract.CustomerSubscriptionUpdatePath](r.Context())
+// UpdateSubscription godoc
+// @Summary Update subscription by ID
+// @Tags subscriptions
+// @Accept json
+// @Produce json
+// @Param id path string true "subscription ID (UUID)" example(4b70f8d6-c702-4e6e-9c65-2ae0e3bb0e5c)
+// @Param payload body customerHttpContract.CustomerSubscriptionUpdateRequest true "Fields to update"
+// @Success 204 "no content"
+// @Failure 400 {object} httpContractCommons.ErrorResponse
+// @Failure 500 {object} httpContractCommons.ErrorResponse
+// @Router /subscriptions/{id} [patch]
+func (h *CustomerSubsciptionsApiController) UpdateSubscription() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		body, _ := mdw.GetFromContext[customerHttpContract.CustomerSubscriptionUpdateRequest](r.Context())
+		path, _ := mdw.GetFromContext[customerHttpContract.CustomerSubscriptionUpdatePath](r.Context())
+		query, _ := mdw.GetFromContext[customerHttpContract.CustomerSubscriptionUpdateQuery](r.Context())
 
-// 		brokerReq := mapper.CustomerSubscriptionUpdateRequest_HttpToBroker(*path.ID, body)
+		brokerReq := mapper.CustomerSubscriptionUpdateRequest_HttpToBroker(*path.ID, body)
 
-// 		_, err := h.service.Update(brokerReq)
-// 		if err != nil {
-// 			code := customerHttpContract.HttpStatusForError(err)
-// 			resp.WriteError(w, err.Error(), code)
-// 			return
-// 		}
-// 		w.WriteHeader(http.StatusNoContent)
-// 	}
-// }
+		_, err := h.service.Update(brokerReq)
+		if err != nil {
+			code := customerHttpContract.HttpStatusForError(err)
+			resp.WriteError(w, err.Error(), code)
+			return
+		}
+		fmt.Println(brokerReq, query)
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
 
 // func (h *CustomerSubsciptionsApiController) SubscriptionsTotalCost() http.HandlerFunc {
 // 	return func(w http.ResponseWriter, r *http.Request) {

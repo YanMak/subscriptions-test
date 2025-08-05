@@ -102,7 +102,7 @@ func NewApp(deps AppDeps) *AppReturningValue {
 			Router:                      router,
 			CustomerSubscriptionService: customerSubscriptionService,
 			ValidatorX:                  validatorX,
-		},
+			DecoderService:              decoder},
 	)
 
 	//return stack(router)
