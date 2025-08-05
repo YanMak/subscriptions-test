@@ -1,11 +1,10 @@
-package meta
+package decoder
 
 import (
 	"fmt"
 	"net/url"
 	"reflect"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -25,14 +24,12 @@ type StructMeta struct {
 	Fields      []*FieldInfo
 }
 
-var typeCache sync.Map // reflect.Type -> *StructMeta
-
-func GetStructMeta(t reflect.Type) *StructMeta {
+func (m *DecoderService) GetStructMeta(t reflect.Type) *StructMeta {
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
 	}
 
-	if cached, ok := typeCache.Load(t); ok {
+	if cached, ok := m.typeCache.Load(t); ok {
 		return cached.(*StructMeta)
 	}
 
@@ -73,12 +70,12 @@ func GetStructMeta(t reflect.Type) *StructMeta {
 			meta.FieldsByTag[tagKey][tagVal] = fi
 		}
 	}
-	typeCache.Store(t, meta)
+	m.typeCache.Store(t, meta)
 	return meta
 }
 
-func MustGetFieldByTag(t reflect.Type, tagKey, tagValue string) (*FieldInfo, error) {
-	meta := GetStructMeta(t)
+func (m *DecoderService) MustGetFieldByTag(t reflect.Type, tagKey, tagValue string) (*FieldInfo, error) {
+	meta := m.GetStructMeta(t)
 	if fi, ok := meta.FieldsByTag[tagKey][tagValue]; ok {
 		return fi, nil
 	}
@@ -157,14 +154,14 @@ func parseBool(s string) (bool, error) {
 	return s == "true" || s == "1", nil
 }
 
-func MapQueryToStruct(values url.Values, out any) error {
+func (m *DecoderService) MapQueryToStruct(values url.Values, out any) error {
 	v := reflect.ValueOf(out)
 	if v.Kind() != reflect.Ptr || v.IsNil() {
 		return fmt.Errorf("output must be a non-nil pointer")
 	}
 	v = v.Elem()
 	reflectedType := v.Type()
-	meta := GetStructMeta(reflectedType)
+	meta := m.GetStructMeta(reflectedType)
 
 	for tagVal, fi := range meta.FieldsByTag["query"] {
 		queryVal := values.Get(tagVal)
@@ -179,13 +176,13 @@ func MapQueryToStruct(values url.Values, out any) error {
 	return nil
 }
 
-func MapPathParamsToStruct(params map[string]string, out any) error {
+func (m *DecoderService) MapPathParamsToStruct(params map[string]string, out any) error {
 	v := reflect.ValueOf(out)
 	if v.Kind() != reflect.Ptr || v.IsNil() {
 		return fmt.Errorf("output must be a non-nil pointer")
 	}
 	v = v.Elem()
-	meta := GetStructMeta(v.Type())
+	meta := m.GetStructMeta(v.Type())
 
 	for tagVal, fi := range meta.FieldsByTag["path"] {
 		pathVal, ok := params[tagVal]

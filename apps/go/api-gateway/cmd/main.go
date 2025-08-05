@@ -11,13 +11,14 @@ import (
 
 	"project1.v0/api_gateway/configs"
 	db "project1.v0/pkg/db/postgresql"
+	"project1.v0/pkg/decoder"
 	httpMdw "project1.v0/pkg/http/middleware"
 
 	customerApiModule "project1.v0/api_gateway/internal/customers-api/module"
 	customerModule "project1.v0/api_gateway/internal/customers/module"
 	"project1.v0/api_gateway/internal/health"
 
-	dbMapper "project1.v0/mappers/dto_db"
+	//dbMapper "project1.v0/mappers/dto_db"
 	validatorХ "project1.v0/pkg/validator_x"
 )
 
@@ -28,6 +29,7 @@ type AppDeps struct {
 	health.HealthApiModuleConstructor
 	db.NewDbConstructor
 	validatorХ.ValidatorXModuleConstructor
+	decoder.DecoderModuleConstructor
 }
 
 type AppServicesType = struct {
@@ -53,6 +55,8 @@ func main() {
 		CustomerApiModuleConstructor: customerApiModule.NewCustomerApiModule,
 		NewDbConstructor:             db.NewDb,
 		ValidatorXModuleConstructor:  validatorХ.NewValidatorXModule,
+		HealthApiModuleConstructor:   health.NewHealthApiModule,
+		DecoderModuleConstructor:     decoder.NewDecoderModule,
 	})
 
 	server := http.Server{
@@ -72,8 +76,10 @@ func NewApp(deps AppDeps) *AppReturningValue {
 	db := deps.NewDbConstructor(db.DbDeps{
 		DbConfig: &deps.Db,
 	})
-	dtoToDbMapperService := dbMapper.NewDtosToDbMapService()
+	//dtoToDbMapperService := dbMapper.NewDtosToDbMapService()
 	validatorX := deps.ValidatorXModuleConstructor(validatorХ.ValidatorXModuleDeps{}).ValidatorX
+
+	decoder := deps.DecoderModuleConstructor(decoder.DecoderModuleDeps{}).DecoderService
 
 	router := http.NewServeMux()
 
@@ -84,9 +90,10 @@ func NewApp(deps AppDeps) *AppReturningValue {
 	deps.HealthApiModuleConstructor(health.HealthApiModuleDeps{Router: router})
 
 	customerModule := deps.CustomerModuleConstructor(customerModule.CustomerModuleDeps{
-		Db:                 db,
-		DtosToDbMapService: dtoToDbMapperService,
-		ValidatorX:         validatorX,
+		Db: db,
+		//DtosToDbMapService: dtoToDbMapperService,
+		ValidatorX:     validatorX,
+		DecoderService: decoder,
 	})
 	customerSubscriptionService := customerModule.CustomerSubscriptionService
 

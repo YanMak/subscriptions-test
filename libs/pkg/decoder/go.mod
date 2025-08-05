@@ -1,4 +1,4 @@
-module project1.v0/pkg/meta
+module project1.v0/pkg/decoder
 
 go 1.24.4
 
