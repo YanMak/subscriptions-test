@@ -3,7 +3,6 @@ package customerSubscriptionsController
 import (
 	"fmt"
 	"net/http"
-	"time"
 
 	//customerHttpContract "project1.v0/api_gateway/internal/customers-api/controller/subscriptions/test-contracts"
 
@@ -43,14 +42,13 @@ func NewCustomerSubsciptionsApiController(deps CustomerSubsciptionsApiController
 	)(http.HandlerFunc(handler.CreateSubscription())))
 
 	deps.Router.Handle(
-		fmt.Sprintf("PATCH /%s/{%s}/{%s}",
+		fmt.Sprintf("PATCH /%s/{%s}",
 			customerHttpContract.PathSubscriptions,
 			customerHttpContract.PathID,
-			customerHttpContract.ParamStartDate,
 		), mdw.Chain(
 			mdw.HttpValidationWithCtx[
 				customerHttpContract.CustomerSubscriptionUpdateRequest,
-				customerHttpContract.CustomerSubscriptionUpdateQuery,
+				struct{},
 				customerHttpContract.CustomerSubscriptionUpdatePath,
 			](
 				handler.validator,
@@ -58,35 +56,63 @@ func NewCustomerSubsciptionsApiController(deps CustomerSubsciptionsApiController
 			),
 		)(http.HandlerFunc(handler.UpdateSubscription())))
 
-	// deps.Router.Handle(fmt.Sprintf("GET /%s",
-	// 	customerHttpContract.PathSubscriptions,
-	// ), mdw.Chain()(http.HandlerFunc(handler.ListSubscriptions())))
+	deps.Router.Handle(fmt.Sprintf("GET /%s",
+		customerHttpContract.PathSubscriptions,
+	), mdw.Chain(
+		mdw.HttpValidationWithCtx[
+			struct{},
+			customerHttpContract.SubscriptionListQuery,
+			struct{},
+		](
+			handler.validator,
+			handler.decoder,
+		),
+	)(http.HandlerFunc(handler.ListSubscriptions())))
 
-	// deps.Router.Handle(fmt.Sprintf("GET /%s/{%s}",
-	// 	customerHttpContract.PathSubscriptions,
-	// 	customerHttpContract.PathID,
-	// ), mdw.Chain()(http.HandlerFunc(handler.GetSubscription())))
+	deps.Router.Handle(fmt.Sprintf("GET /%s/{%s}",
+		customerHttpContract.PathSubscriptions,
+		customerHttpContract.PathID,
+	), mdw.Chain(
+		mdw.HttpValidationWithCtx[
+			struct{},
+			struct{},
+			customerHttpContract.CustomerSubscriptionIDPath,
+		](
+			handler.validator,
+			handler.decoder,
+		),
+	)(http.HandlerFunc(handler.GetSubscription())))
 
-	// deps.Router.Handle(fmt.Sprintf("DELETE /%s/{%s}",
-	// 	customerHttpContract.PathSubscriptions,
-	// 	customerHttpContract.PathID,
-	// ), mdw.Chain()(http.HandlerFunc(handler.DeleteSubscription())))
+	deps.Router.Handle(fmt.Sprintf("DELETE /%s/{%s}",
+		customerHttpContract.PathSubscriptions,
+		customerHttpContract.PathID,
+	), mdw.Chain(
+		mdw.HttpValidationWithCtx[
+			struct{},
+			struct{},
+			customerHttpContract.CustomerSubscriptionIDPath,
+		](
+			handler.validator,
+			handler.decoder,
+		),
+	)(http.HandlerFunc(handler.DeleteSubscription())))
 
-	// deps.Router.Handle(fmt.Sprintf("GET /%s/%s",
-	// 	customerHttpContract.PathSubscriptions,
-	// 	customerHttpContract.PathTotalCost,
-	// ), mdw.Chain()(http.HandlerFunc(handler.SubscriptionsTotalCost())))
+	deps.Router.Handle(fmt.Sprintf("GET /%s/%s",
+		customerHttpContract.PathSubscriptions,
+		customerHttpContract.PathTotalCost,
+	), mdw.Chain(
+		mdw.HttpValidationWithCtx[
+			struct{},
+			customerHttpContract.SubscriptionTotalQuery,
+			struct{},
+		](
+			handler.validator,
+			handler.decoder,
+		),
+	)(http.HandlerFunc(handler.SubscriptionsTotalCost())))
 
 	///////////
 	// NATIVE
-}
-
-func (h *CustomerSubsciptionsApiController) Health() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-
-		resp.Json(w, fmt.Sprintf("OK, now is %v", time.Now()), 200)
-
-	}
 }
 
 // CreateSubscription godoc
@@ -103,8 +129,6 @@ func (h *CustomerSubsciptionsApiController) CreateSubscription() http.HandlerFun
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		body, _ := mdw.GetFromContext[customerHttpContract.CustomerSubscriptionCreateRequest](r.Context())
-		// query, _ := mdw.GetFromContext[customerHttpContract.CustomerSubscriptionCreateQuery](r.Context())
-		// path, _ := mdw.GetFromContext[customerHttpContract.CustomerSubscriptionCreatePath](r.Context())
 
 		brokerReq := mapper.CustomerSubscriptionCreateRequest_HttpToBroker(body)
 
@@ -118,117 +142,104 @@ func (h *CustomerSubsciptionsApiController) CreateSubscription() http.HandlerFun
 			ID: brokerResp.ID,
 		}
 		resp.Json(w, respPayload, 201)
-		//resp.Json(w, query, 201)
-		//resp.Json(w, path, 201)
+
 	}
 }
 
-// // GetSubscription godoc
-// // @Summary Get subscription by id
-// // @Tags subscriptions
-// // @Produce json
-// // @Param id path string true "subscription ID (UUID)" example(60601fee-2bf1-4721-ae6f-7636e79a0cba)
-// // @Success 200 {object} customerHttpContract.CustomerSubscriptionResponse
-// // @Failure 400 {object} httpContractCommons.ErrorResponse
-// // @Failure 404 {object} httpContractCommons.ErrorResponse
-// // @Failure 500 {object} httpContractCommons.ErrorResponse
-// // @Router /subscriptions/{id} [get]
-// func (h *CustomerSubsciptionsApiController) GetSubscription() http.HandlerFunc {
-// 	return func(w http.ResponseWriter, r *http.Request) {
+// GetSubscription godoc
+// @Summary Get subscription by id
+// @Tags subscriptions
+// @Produce json
+// @Param id path string true "subscription ID (UUID)" example(60601fee-2bf1-4721-ae6f-7636e79a0cba)
+// @Success 200 {object} customerHttpContract.CustomerSubscriptionResponse
+// @Failure 400 {object} httpContractCommons.ErrorResponse
+// @Failure 404 {object} httpContractCommons.ErrorResponse
+// @Failure 500 {object} httpContractCommons.ErrorResponse
+// @Router /subscriptions/{id} [get]
+func (h *CustomerSubsciptionsApiController) GetSubscription() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 
-// 		id := r.PathValue(customerHttpContract.PathID)
-// 		_, err := uuid.Parse(id)
-// 		if err != nil {
-// 			code := customerHttpContract.HttpStatusForError(customerDomainContract.ErrInvalidID)
-// 			resp.WriteError(w, customerDomainContract.ErrInvalidID.Error(), code)
-// 			return
-// 		}
+		// id := r.PathValue(customerHttpContract.PathID)
+		// _, err := uuid.Parse(id)
+		// if err != nil {
+		// 	code := customerHttpContract.HttpStatusForError(customerDomainContract.ErrInvalidID)
+		// 	resp.WriteError(w, customerDomainContract.ErrInvalidID.Error(), code)
+		// 	return
+		// }
+		path, _ := mdw.GetFromContext[customerHttpContract.CustomerSubscriptionIDPath](r.Context())
 
-// 		brokerReq := customerBrokerContract.CustomerSubscriptionGetRequest{
-// 			ID: id,
-// 		}
+		brokerReq := mapper.CustomerSubscriptionIDRequest_HttpToBroker(path)
 
-// 		subscription, err := h.service.Get(brokerReq)
-// 		if err != nil {
-// 			code := customerHttpContract.HttpStatusForError(err)
-// 			resp.WriteError(w, err.Error(), code)
-// 			return
-// 		}
-// 		resp.Json(w, subscription, 200)
-// 	}
-// }
+		subscription, err := h.service.Get(brokerReq)
+		if err != nil {
+			code := customerHttpContract.HttpStatusForError(err)
+			resp.WriteError(w, err.Error(), code)
+			return
+		}
+		resp.Json(w, subscription, 200)
+	}
+}
 
-// // ListSubscriptions godoc
-// // @Summary Get list of subscriptions by user_id with optional filters
-// // @Tags subscriptions
-// // @Produce json
-// // @Param user_id query string true "User ID (UUID)" example(60601fee-2bf1-4721-ae6f-7636e79a0cba)
-// // @Param service_name query string false "Partial match of service name" example(yandex)
-// // @Param limit query int false "Page size (max: 100)" default(20) minimum(1) maximum(100)
-// // @Param offset query int false "Offset for pagination" default(0) minimum(0)
-// // @Success 200 {object} customerHttpContract.CustomerSubscriptionsListResponse
-// // @Failure 400 {object} httpContractCommons.ErrorResponse
-// // @Failure 500 {object} httpContractCommons.ErrorResponse
-// // @Router /subscriptions [get]
-// func (h *CustomerSubsciptionsApiController) ListSubscriptions() http.HandlerFunc {
-// 	return func(w http.ResponseWriter, r *http.Request) {
+// ListSubscriptions godoc
+// @Summary Get list of subscriptions by user_id with optional filters
+// @Tags subscriptions
+// @Produce json
+// @Param user_id query string true "User ID (UUID)" example(60601fee-2bf1-4721-ae6f-7636e79a0cba)
+// @Param service_name query string false "Partial match of service name" example(yandex)
+// @Param limit query int false "Page size (max: 100)" default(20) minimum(1) maximum(100)
+// @Param offset query int false "Offset for pagination" default(0) minimum(0)
+// @Success 200 {object} customerHttpContract.CustomerSubscriptionsListResponse
+// @Failure 400 {object} httpContractCommons.ErrorResponse
+// @Failure 500 {object} httpContractCommons.ErrorResponse
+// @Router /subscriptions [get]
+func (h *CustomerSubsciptionsApiController) ListSubscriptions() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 
-// 		query, err := req.HandleQuery[customerHttpContract.SubscriptionListQuery](r, h.validator)
-// 		if err != nil {
-// 			resp.WriteError(w, err.Error(), http.StatusBadRequest)
-// 			return
-// 		}
+		query, _ := mdw.GetFromContext[customerHttpContract.SubscriptionListQuery](r.Context())
 
-// 		brokerReq := customerBrokerContract.CustomerSubscriptionsListRequest{
-// 			UserID:      query.UserID,
-// 			ServiceName: query.ServiceName,
-// 			StartDate:   query.StartDate,
-// 			EndDate:     query.EndDate,
-// 			Limit:       query.Limit,
-// 			Offset:      query.Offset,
-// 		}
-// 		subs, err := h.service.List(brokerReq)
-// 		if err != nil {
-// 			code := customerHttpContract.HttpStatusForError(err)
-// 			resp.WriteError(w, err.Error(), code)
-// 			return
-// 		}
-// 		resp.Json(w, subs.Subscriptions, 200)
-// 	}
-// }
+		brokerReq := mapper.CustomerSubscriptionListRequest_HttpToBroker(query)
 
-// // DeleteSubscription godoc
-// // @Summary Delete subscription by ID
-// // @Tags subscriptions
-// // @Produce json
-// // @Param id path string true "subscription ID (UUID)" example(4b70f8d6-c702-4e6e-9c65-2ae0e3bb0e5c)
-// // @Success 204 "no content"
-// // @Failure 400 {object} httpContractCommons.ErrorResponse
-// // @Failure 500 {object} httpContractCommons.ErrorResponse
-// // @Router /subscriptions/{id} [delete]
-// func (h *CustomerSubsciptionsApiController) DeleteSubscription() http.HandlerFunc {
-// 	return func(w http.ResponseWriter, r *http.Request) {
-// 		id := r.PathValue(customerHttpContract.PathID)
-// 		_, err := uuid.Parse(id)
-// 		if err != nil {
-// 			code := customerHttpContract.HttpStatusForError(customerDomainContract.ErrInvalidID)
-// 			resp.WriteError(w, customerDomainContract.ErrInvalidID.Error(), code)
-// 			return
-// 		}
+		subs, err := h.service.List(brokerReq)
+		if err != nil {
+			code := customerHttpContract.HttpStatusForError(err)
+			resp.WriteError(w, err.Error(), code)
+			return
+		}
+		resp.Json(w, subs.Subscriptions, 200)
+	}
+}
 
-// 		brokerReq := customerBrokerContract.CustomerSubscriptionDeleteRequest{
-// 			ID: id,
-// 		}
+// DeleteSubscription godoc
+// @Summary Delete subscription by ID
+// @Tags subscriptions
+// @Produce json
+// @Param id path string true "subscription ID (UUID)" example(4b70f8d6-c702-4e6e-9c65-2ae0e3bb0e5c)
+// @Success 204 "no content"
+// @Failure 400 {object} httpContractCommons.ErrorResponse
+// @Failure 500 {object} httpContractCommons.ErrorResponse
+// @Router /subscriptions/{id} [delete]
+func (h *CustomerSubsciptionsApiController) DeleteSubscription() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// id := r.PathValue(customerHttpContract.PathID)
+		// _, err := uuid.Parse(id)
+		// if err != nil {
+		// 	code := customerHttpContract.HttpStatusForError(customerDomainContract.ErrInvalidID)
+		// 	resp.WriteError(w, customerDomainContract.ErrInvalidID.Error(), code)
+		// 	return
+		// }
+		path, _ := mdw.GetFromContext[customerHttpContract.CustomerSubscriptionIDPath](r.Context())
 
-// 		_, err = h.service.Delete(brokerReq)
-// 		if err != nil {
-// 			code := customerHttpContract.HttpStatusForError(err)
-// 			resp.WriteError(w, err.Error(), code)
-// 			return
-// 		}
-// 		w.WriteHeader(http.StatusNoContent) // 204, without body
-// 	}
-// }
+		brokerReq := mapper.CustomerSubscriptionIDRequest_HttpToBroker(path)
+
+		_, err := h.service.Delete(brokerReq)
+		if err != nil {
+			code := customerHttpContract.HttpStatusForError(err)
+			resp.WriteError(w, err.Error(), code)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent) // 204, without body
+	}
+}
 
 // UpdateSubscription godoc
 // @Summary Update subscription by ID
@@ -245,7 +256,6 @@ func (h *CustomerSubsciptionsApiController) UpdateSubscription() http.HandlerFun
 	return func(w http.ResponseWriter, r *http.Request) {
 		body, _ := mdw.GetFromContext[customerHttpContract.CustomerSubscriptionUpdateRequest](r.Context())
 		path, _ := mdw.GetFromContext[customerHttpContract.CustomerSubscriptionUpdatePath](r.Context())
-		query, _ := mdw.GetFromContext[customerHttpContract.CustomerSubscriptionUpdateQuery](r.Context())
 
 		brokerReq := mapper.CustomerSubscriptionUpdateRequest_HttpToBroker(*path.ID, body)
 
@@ -255,33 +265,23 @@ func (h *CustomerSubsciptionsApiController) UpdateSubscription() http.HandlerFun
 			resp.WriteError(w, err.Error(), code)
 			return
 		}
-		fmt.Println(brokerReq, query)
 		w.WriteHeader(http.StatusNoContent)
 	}
 }
 
-// func (h *CustomerSubsciptionsApiController) SubscriptionsTotalCost() http.HandlerFunc {
-// 	return func(w http.ResponseWriter, r *http.Request) {
+func (h *CustomerSubsciptionsApiController) SubscriptionsTotalCost() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 
-// 		userID := r.URL.Query().Get(customerHttpContract.ParamUserID)
-// 		ServiceName := r.URL.Query().Get(customerHttpContract.ParamServiceName)
-// 		StartDate := r.URL.Query().Get(customerHttpContract.ParamStartDate)
-// 		EndDate := r.URL.Query().Get(customerHttpContract.ParamEndDate)
-// 		_, err := uuid.Parse(userID)
-// 		if err != nil {
-// 			code := customerHttpContract.HttpStatusForError(customerDomainContract.ErrInvalidUserID)
-// 			resp.WriteError(w, customerDomainContract.ErrInvalidUserID.Error(), code)
-// 			return
-// 		}
+		query, _ := mdw.GetFromContext[customerHttpContract.SubscriptionTotalQuery](r.Context())
 
-// 		brokerReq := mapper.CustomerSubscriptionTotalCostRequest_HttpToBroker(userID, &ServiceName, &StartDate, &EndDate)
+		brokerReq := mapper.CustomerSubscriptionTotalCostRequest_HttpToBroker(query)
 
-// 		brokerResp, err := h.service.TotalCost(brokerReq)
-// 		if err != nil {
-// 			code := customerHttpContract.HttpStatusForError(err)
-// 			resp.WriteError(w, err.Error(), code)
-// 			return
-// 		}
-// 		resp.Json(w, brokerResp, 200)
-// 	}
-// }
+		brokerResp, err := h.service.TotalCost(brokerReq)
+		if err != nil {
+			code := customerHttpContract.HttpStatusForError(err)
+			resp.WriteError(w, err.Error(), code)
+			return
+		}
+		resp.Json(w, brokerResp, 200)
+	}
+}

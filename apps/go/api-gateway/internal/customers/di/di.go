@@ -5,15 +5,15 @@ import (
 )
 
 type ICustomerSubscriptionService interface {
-	Create(dto *customerBrokerContract.CustomerSubscriptionCreateRequest) (*customerBrokerContract.CustomerSubscriptionCreateResponse, error)
+	Create(*customerBrokerContract.CustomerSubscriptionCreateRequest) (*customerBrokerContract.CustomerSubscriptionCreateResponse, error)
 
-	// Get(customerBrokerContract.CustomerSubscriptionGetRequest) (*customerBrokerContract.CustomerSubscription, error)
+	Get(*customerBrokerContract.CustomerSubscriptionIDRequest) (*customerBrokerContract.CustomerSubscription, error)
 
-	// List(dto customerBrokerContract.CustomerSubscriptionsListRequest) (customerBrokerContract.CustomerSubscriptionsListResponse, error)
+	Delete(*customerBrokerContract.CustomerSubscriptionIDRequest) (customerBrokerContract.CustomerSubscriptionDeleteResponse, error)
 
-	// Delete(customerBrokerContract.CustomerSubscriptionDeleteRequest) (customerBrokerContract.CustomerSubscriptionDeleteResponse, error)
+	List(*customerBrokerContract.CustomerSubscriptionsListRequest) (customerBrokerContract.CustomerSubscriptionsListResponse, error)
 
-	Update(dto *customerBrokerContract.CustomerSubscriptionUpdateRequest) (customerBrokerContract.CustomerSubscriptionUpdateResponse, error)
+	Update(*customerBrokerContract.CustomerSubscriptionUpdateRequest) (customerBrokerContract.CustomerSubscriptionUpdateResponse, error)
 
-	// TotalCost(dto *customerBrokerContract.CustomerSubscriptionTotalCostRequest) (customerBrokerContract.CustomerSubscriptionTotalCostResponse, error)
+	TotalCost(*customerBrokerContract.CustomerSubscriptionTotalCostRequest) (customerBrokerContract.CustomerSubscriptionTotalCostResponse, error)
 }

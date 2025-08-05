@@ -28,16 +28,33 @@ func CustomerSubscriptionUpdateRequest_HttpToBroker(
 	}
 }
 
+func CustomerSubscriptionIDRequest_HttpToBroker(
+	dto *customerHttpContract.CustomerSubscriptionIDPath,
+) *customerBrokerContract.CustomerSubscriptionIDRequest {
+	return &customerBrokerContract.CustomerSubscriptionIDRequest{
+		ID: *dto.ID,
+	}
+}
+
+func CustomerSubscriptionListRequest_HttpToBroker(dto *customerHttpContract.SubscriptionListQuery) *customerBrokerContract.CustomerSubscriptionsListRequest {
+	return &customerBrokerContract.CustomerSubscriptionsListRequest{
+		Limit:       dto.Limit,
+		Offset:      dto.Offset,
+		ServiceName: dto.ServiceName,
+		//Price:       dto.Price,
+		UserID:    dto.UserID,
+		StartDate: dto.StartDate,
+		EndDate:   dto.EndDate,
+	}
+}
+
 func CustomerSubscriptionTotalCostRequest_HttpToBroker(
-	userID string,
-	ServiceName *string,
-	StartDate *string,
-	EndDate *string,
+	dto *customerHttpContract.SubscriptionTotalQuery,
 ) *customerBrokerContract.CustomerSubscriptionTotalCostRequest {
 	return &customerBrokerContract.CustomerSubscriptionTotalCostRequest{
-		UserID:      userID,
-		ServiceName: ServiceName,
-		StartDate:   StartDate,
-		EndDate:     EndDate,
+		UserID:      dto.UserID,
+		ServiceName: dto.ServiceName,
+		StartDate:   dto.StartDate,
+		EndDate:     dto.EndDate,
 	}
 }

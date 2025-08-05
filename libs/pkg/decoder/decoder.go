@@ -3,6 +3,7 @@ package decoder
 import (
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 
@@ -144,11 +145,10 @@ func defaultSetter(t reflect.Type) func(reflect.Value, string) error {
 }
 
 func parseInt(s string) (int64, error) {
-	var i int64
-	_, err := fmt.Sscanf(s, "%d", &i)
-	return i, err
+	return strconv.ParseInt(s, 10, 64)
+
 }
 
 func parseBool(s string) (bool, error) {
-	return s == "true" || s == "1", nil
+	return strconv.ParseBool(s)
 }

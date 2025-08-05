@@ -25,6 +25,7 @@ func NewCustomerModule(deps CustomerModuleDeps) *CustomerModule {
 	repo := customerSubscriptionsRepository.NewCustomerSubscriptionRepository(customerSubscriptionsRepository.CustomerSubscriptionRepositoryDeps{
 		Db: deps.Db,
 		//DtosToDbMapService: deps.DtosToDbMapService,
+		DecoderService: deps.DecoderService,
 	})
 
 	service := customerSubscriptionService.NewCustomerSubscriptionService(customerSubscriptionService.CustomerSubscriptionServiceDeps{

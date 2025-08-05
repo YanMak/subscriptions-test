@@ -37,13 +37,16 @@ type CustomerSubscriptionUpdateResponse struct{}
 
 // /////////////
 // Get Subscription
+
+type CustomerSubscriptionIDRequest struct {
+	ID string `json:"id"`
+}
+
 const (
 	SubscriptionGetTopic = "customer.get-subscription.query"
 )
 
-type CustomerSubscriptionGetRequest struct {
-	ID string `json:"id"`
-}
+// CustomerSubscriptionIDRequest as request
 
 type CustomerSubscription struct {
 	ID          string  `json:"id" db:"id"`
@@ -61,7 +64,7 @@ const (
 )
 
 type CustomerSubscriptionsListRequest struct {
-	UserID      string  `json:"user_id" db:"user_id"`
+	UserID      *string `json:"user_id,omitempty" validate:"omitempty,uuid"`
 	ServiceName *string `json:"service_name,omitempty"`
 	StartDate   *string `json:"start_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`
 	EndDate     *string `json:"end_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`
@@ -79,10 +82,6 @@ const (
 	SubscriptionDeleteTopic = "customer.delete-subscription.command"
 )
 
-type CustomerSubscriptionDeleteRequest struct {
-	ID string `json:"id"`
-}
-
 type CustomerSubscriptionDeleteResponse struct{}
 
 // /////////////
@@ -90,6 +89,8 @@ type CustomerSubscriptionDeleteResponse struct{}
 const (
 	SubscriptionTotalCostTopic = "customer.total-cost-subscription.query"
 )
+
+// CustomerSubscriptionIDRequest as request
 
 type CustomerSubscriptionTotalCostRequest struct {
 	UserID      string  `json:"user_id" validate:"required,uuid"`

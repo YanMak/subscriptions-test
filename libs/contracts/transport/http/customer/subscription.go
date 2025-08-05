@@ -35,25 +35,25 @@ type CustomerSubscriptionUpdateRequest struct {
 	EndDate     *string `json:"end_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`   // @example "07-2026"
 }
 type CustomerSubscriptionUpdatePath struct {
-	ID        *string `path:"id" validate:"uuid"`                        // @example 400
-	StartDate *string `path:"start_date" validate:"date_format_mm_yyyy"` // @example "07-2025"
+	ID *string `path:"id" validate:"uuid"` //
 }
-type CustomerSubscriptionUpdateQuery struct {
-	UserID    *string `query:"user_id" validate:"uuid"`                                       // @example "60601fee-2bf1-4721-ae6f-7636e79a0cba"
-	StartDate *string `query:"start_date,omitempty" validate:"omitempty,date_format_mm_yyyy"` // @example "07-2025"
-}
+
+// type CustomerSubscriptionUpdateQuery struct {
+// 	UserID    *string `query:"user_id" validate:"uuid"`                                       // @example "60601fee-2bf1-4721-ae6f-7636e79a0cba"
+// 	StartDate *string `query:"start_date,omitempty" validate:"omitempty,date_format_mm_yyyy"` // @example "07-2025"
+// }
 
 // Response is empty
 
 // ///////
 // List
 type SubscriptionListQuery struct {
-	UserID      string  `json:"user_id" validate:"required,uuid"`
-	ServiceName *string `json:"service_name,omitempty" validate:"omitempty"`
-	StartDate   *string `json:"start_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`
-	EndDate     *string `json:"end_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`
-	Limit       *int    `json:"limit,omitempty" validate:"omitempty,min=1,max=100"`
-	Offset      *int    `json:"offset,omitempty" validate:"omitempty,min=0"`
+	UserID      *string `query:"user_id,omitempty" validate:"omitempty,uuid"`
+	ServiceName *string `query:"service_name,omitempty" validate:"omitempty"`
+	StartDate   *string `query:"start_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`
+	EndDate     *string `query:"end_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`
+	Limit       *int    `query:"limit,omitempty" validate:"omitempty,min=1,max=100"`
+	Offset      *int    `query:"offset,omitempty" validate:"omitempty,min=0"`
 }
 
 /////////
@@ -61,17 +61,21 @@ type SubscriptionListQuery struct {
 
 // @Description Aggregate request: subscriptions sum
 // @name SubscriptionAggregateRequest
-type SubscriptionTotalRequest struct {
-	UserID      string `json:"user_id"`
-	ServiceName string `json:"service_name"`
-	StartDate   string `json:"start_date"`
-	EndDate     string `json:"end_date"`
+type SubscriptionTotalQuery struct {
+	UserID      string  `query:"user_id" validate:"required,uuid"`
+	ServiceName *string `query:"service_name,omitempty" validate:"omitempty"`
+	StartDate   *string `query:"start_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`
+	EndDate     *string `query:"end_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`
 }
 
 // @Description Aggregate response: сумма
 // @name SubscriptionAggregateResponse
 type SubscriptionTotalResponse struct {
 	Total int `json:"total"` // Суммарная стоимость подписок (за период, по фильтрам)
+}
+
+type CustomerSubscriptionIDPath struct {
+	ID *string `path:"id" validate:"uuid"` //
 }
 
 // ErrorResponse — commonly used struct for err
