@@ -20,28 +20,29 @@ func (s *CustomerSubscriptionService) Update(dto *customerBrokerContract.Custome
 	entity := customerSubscriptionModel.NewCustomerSubscription(customerSubscriptionModel.NewCustomerSubscriptionDeps{
 		ID: id,
 	})
-	mask := []string{}
+	//mask := []string{}
 	if dto.ServiceName != nil {
 		entity.UpdateServiceName(dto.ServiceName)
-		field := "ServiceName"
-		mask = append(mask, field)
+		// field := "ServiceName"
+		// mask = append(mask, field)
 	}
 	if dto.Price != nil {
 		entity.UpdatePrice(dto.Price)
-		field := "Price"
-		mask = append(mask, field)
+		// field := "Price"
+		// mask = append(mask, field)
 	}
 	if dto.StartDate != nil {
 		entity.UpdateStartDate(dto.StartDate)
-		field := "StartDate"
-		mask = append(mask, field)
+		// field := "StartDate"
+		// mask = append(mask, field)
 	}
 	if dto.EndDate != nil {
 		entity.UpdateEndDate(dto.EndDate)
-		field := "EndDate"
-		mask = append(mask, field)
+		// field := "EndDate"
+		// mask = append(mask, field)
 	}
 
+	mask := s.decoder.BuildUpdateMask(dto)
 	err := s.repo.UpdateWithTx(ctx, entity, mask)
 
 	return customerBrokerContract.CustomerSubscriptionUpdateResponse{}, err

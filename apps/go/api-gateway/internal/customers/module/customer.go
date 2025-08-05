@@ -29,7 +29,8 @@ func NewCustomerModule(deps CustomerModuleDeps) *CustomerModule {
 	})
 
 	service := customerSubscriptionService.NewCustomerSubscriptionService(customerSubscriptionService.CustomerSubscriptionServiceDeps{
-		Repo: repo,
+		Repo:           repo,
+		DecoderService: deps.DecoderService,
 	})
 	return &CustomerModule{CustomerSubscriptionService: service}
 }

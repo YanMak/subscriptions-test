@@ -20,11 +20,13 @@ type DecoderModuleConstructor func(DecoderModuleDeps) *DecoderModule
 type DecoderServiceDeps struct{}
 
 type DecoderService struct {
-	typeCache sync.Map // reflect.Type -> *StructMeta
+	typeCache    sync.Map // reflect.Type -> *StructMeta
+	dbFieldCache sync.Map // reflect.Type -> map[string]string
 }
 
 func NewDecoderService(deps DecoderServiceDeps) *DecoderService {
 	return &DecoderService{
-		typeCache: sync.Map{},
+		typeCache:    sync.Map{},
+		dbFieldCache: sync.Map{},
 	}
 }
