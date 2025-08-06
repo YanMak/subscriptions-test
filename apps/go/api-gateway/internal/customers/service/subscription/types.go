@@ -16,5 +16,8 @@ type CustomerSubscriptionService struct {
 }
 
 func NewCustomerSubscriptionService(deps CustomerSubscriptionServiceDeps) *CustomerSubscriptionService {
-	return &CustomerSubscriptionService{repo: deps.Repo}
+	return &CustomerSubscriptionService{
+		repo:    deps.Repo,
+		decoder: deps.DecoderService,
+	}
 }

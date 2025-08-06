@@ -75,9 +75,24 @@ func (r *CustomerSubscriptionRepository) List(
 		whereClauses = append(whereClauses, fmt.Sprintf("%s=$%d", dbFieldName, len(args)+1))
 
 		val := fieldVal.Elem().Interface()
-		if field == "StartDate" || field == "EndDate" {
-			strVal, _ := fieldVal.Elem().Interface().(string)
-			val = conv.ParseDate(strVal)
+
+		idx := len(args) + 1
+		switch field {
+		case "ServiceName":
+			whereClauses = append(whereClauses, fmt.Sprintf("%s ILIKE $%d", dbFieldName, idx))
+			strVal, _ := val.(string)
+			args = append(args, fmt.Sprintf("%%%s%%", strVal))
+		case "StartDate":
+			whereClauses = append(whereClauses, fmt.Sprintf("%s >= $%d", dbFieldName, idx))
+			strVal, _ := val.(string)
+			args = append(args, conv.ParseDate(strVal))
+		case "EndDate":
+			whereClauses = append(whereClauses, fmt.Sprintf("%s <= $%d", dbFieldName, idx))
+			strVal, _ := val.(string)
+			args = append(args, conv.ParseDate(strVal))
+		default:
+			whereClauses = append(whereClauses, fmt.Sprintf("%s=$%d", dbFieldName, idx))
+			args = append(args, val)
 		}
 		args = append(args, val)
 	}

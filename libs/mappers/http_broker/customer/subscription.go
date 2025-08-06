@@ -45,6 +45,8 @@ func CustomerSubscriptionListRequest_HttpToBroker(dto *customerHttpContract.Subs
 		UserID:    dto.UserID,
 		StartDate: dto.StartDate,
 		EndDate:   dto.EndDate,
+		PriceFrom: dto.PriceFrom,
+		PriceTo:   dto.PriceTo,
 	}
 }
 
@@ -56,5 +58,7 @@ func CustomerSubscriptionTotalCostRequest_HttpToBroker(
 		ServiceName: dto.ServiceName,
 		StartDate:   dto.StartDate,
 		EndDate:     dto.EndDate,
+		PriceFrom:   dto.PriceFrom,
+		PriceTo:     dto.PriceTo,
 	}
 }

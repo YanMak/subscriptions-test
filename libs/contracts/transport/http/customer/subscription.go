@@ -52,6 +52,8 @@ type SubscriptionListQuery struct {
 	ServiceName *string `query:"service_name,omitempty" validate:"omitempty"`
 	StartDate   *string `query:"start_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`
 	EndDate     *string `query:"end_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`
+	PriceFrom   *int    `query:"price_from,omitempty" validate:"omitempty,min=0"`
+	PriceTo     *int    `query:"price_to,omitempty" validate:"omitempty,min=0"`
 	Limit       *int    `query:"limit,omitempty" validate:"omitempty,min=1,max=100"`
 	Offset      *int    `query:"offset,omitempty" validate:"omitempty,min=0"`
 }
@@ -66,6 +68,8 @@ type SubscriptionTotalQuery struct {
 	ServiceName *string `query:"service_name,omitempty" validate:"omitempty"`
 	StartDate   *string `query:"start_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`
 	EndDate     *string `query:"end_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`
+	PriceFrom   *int    `query:"price_from,omitempty" validate:"omitempty,min=0"`
+	PriceTo     *int    `query:"price_to,omitempty" validate:"omitempty,min=0"`
 }
 
 // @Description Aggregate response: сумма

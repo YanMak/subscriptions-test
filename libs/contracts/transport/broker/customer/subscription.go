@@ -68,8 +68,11 @@ type CustomerSubscriptionsListRequest struct {
 	ServiceName *string `json:"service_name,omitempty"`
 	StartDate   *string `json:"start_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`
 	EndDate     *string `json:"end_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`
-	Limit       *int    `json:"limit,omitempty" validate:"omitempty"`
-	Offset      *int    `json:"offset,omitempty" validate:"omitempty"`
+	PriceFrom   *int    `json:"price_from,omitempty" validate:"omitempty,min=0"`
+	PriceTo     *int    `json:"price_to,omitempty" validate:"omitempty,min=0"`
+
+	Limit  *int `json:"limit,omitempty" validate:"omitempty"`
+	Offset *int `json:"offset,omitempty" validate:"omitempty"`
 }
 
 type CustomerSubscriptionsListResponse struct {
@@ -97,6 +100,8 @@ type CustomerSubscriptionTotalCostRequest struct {
 	ServiceName *string `json:"service_name,omitempty"`
 	StartDate   *string `json:"start_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`
 	EndDate     *string `json:"end_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`
+	PriceFrom   *int    `json:"price_from,omitempty" validate:"omitempty,min=0"`
+	PriceTo     *int    `json:"price_to,omitempty" validate:"omitempty,min=0"`
 }
 
 type CustomerSubscriptionTotalCostResponse struct {
