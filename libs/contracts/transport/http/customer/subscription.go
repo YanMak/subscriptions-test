@@ -62,7 +62,7 @@ type SubscriptionListQuery struct {
 // @Description Aggregate request: subscriptions sum
 // @name SubscriptionAggregateRequest
 type SubscriptionTotalQuery struct {
-	UserID      string  `query:"user_id" validate:"required,uuid"`
+	UserID      *string `query:"user_id" validate:"required,uuid"`
 	ServiceName *string `query:"service_name,omitempty" validate:"omitempty"`
 	StartDate   *string `query:"start_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`
 	EndDate     *string `query:"end_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`

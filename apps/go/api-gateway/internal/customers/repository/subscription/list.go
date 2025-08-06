@@ -3,13 +3,22 @@ package customerSubscriptionsRepository
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"reflect"
+	"strings"
 
 	model "project1.v0/api_gateway/internal/customers/models/subscription"
 	customerDomainContract "project1.v0/contracts/domain/customer"
+	customerBrokerContract "project1.v0/contracts/transport/broker/customer"
+	"project1.v0/mappers/conv"
 	db_postgresql "project1.v0/pkg/db/postgresql"
 )
 
-func (r *CustomerSubscriptionRepository) ListWithTx(ctx context.Context, userID string) ([]*model.CustomerSubscription, error) {
+func (r *CustomerSubscriptionRepository) ListWithTx(
+	ctx context.Context,
+	dto *customerBrokerContract.CustomerSubscriptionsListRequest,
+	fields []string,
+) ([]*model.CustomerSubscription, error) {
 
 	var entities []*model.CustomerSubscription
 
@@ -17,7 +26,7 @@ func (r *CustomerSubscriptionRepository) ListWithTx(ctx context.Context, userID 
 
 	err := db_postgresql.WithTx(r.db.DB, ctx, nil, func(tx *sql.Tx) error {
 		var err error
-		entities, err = r.List(ctx, tx, userID)
+		entities, err = r.List(ctx, tx, dto, fields)
 		if len(entities) == 0 && err == nil {
 			businessErr = customerDomainContract.ErrSubscriptionNotFound
 			return nil
@@ -34,8 +43,59 @@ func (r *CustomerSubscriptionRepository) ListWithTx(ctx context.Context, userID 
 	return entities, err
 }
 
-func (r *CustomerSubscriptionRepository) List(ctx context.Context, tx *sql.Tx, userID string) ([]*model.CustomerSubscription, error) {
-	rows, err := tx.QueryContext(ctx, `SELECT id, service_name, price, user_id, start_date, end_date FROM subscriptions WHERE user_id=$1`, userID)
+func (r *CustomerSubscriptionRepository) List(
+	ctx context.Context,
+	tx *sql.Tx,
+	dto *customerBrokerContract.CustomerSubscriptionsListRequest,
+	fields []string,
+) ([]*model.CustomerSubscription, error) {
+
+	query := `SELECT id, service_name, price, user_id, start_date, end_date FROM subscriptions`
+	whereClauses := make([]string, 0, len(fields))
+	args := make([]interface{}, 0, len(fields))
+
+	mapNameToDb, err := r.decoder.GetDbFieldsStruct(&model.CustomerSubscription{})
+	if err != nil {
+		return nil, err
+	}
+
+	v := reflect.ValueOf(dto).Elem()
+	for _, field := range fields {
+		if field == "Limit" || field == "Offset" {
+			continue
+		}
+		dbFieldName, ok := mapNameToDb[field]
+		if !ok {
+			return nil, fmt.Errorf("field not found: %s", field)
+		}
+		fieldVal := v.FieldByName(field)
+		if !fieldVal.IsValid() || fieldVal.IsNil() {
+			continue
+		}
+		whereClauses = append(whereClauses, fmt.Sprintf("%s=$%d", dbFieldName, len(args)+1))
+
+		val := fieldVal.Elem().Interface()
+		if field == "StartDate" || field == "EndDate" {
+			strVal, _ := fieldVal.Elem().Interface().(string)
+			val = conv.ParseDate(strVal)
+		}
+		args = append(args, val)
+	}
+
+	if len(whereClauses) > 0 {
+		query += " WHERE " + strings.Join(whereClauses, " AND ")
+	}
+
+	if dto.Limit != nil {
+		args = append(args, *dto.Limit)
+		query += fmt.Sprintf(" LIMIT $%d", len(args))
+	}
+	if dto.Offset != nil {
+		args = append(args, *dto.Offset)
+		query += fmt.Sprintf(" OFFSET $%d", len(args))
+	}
+
+	rows, err := tx.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}

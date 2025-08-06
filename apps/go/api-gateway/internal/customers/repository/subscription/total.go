@@ -51,19 +51,8 @@ func (r *CustomerSubscriptionRepository) TotalCost(ctx context.Context, tx *sql.
 		return 0, err
 	}
 
-	// implement UserID
-	idx++
-	field := "UserID"
-	fieldVal := val.FieldByName(field)
-	UserIdDbFieldName, ok := mapNameToDb[field]
-	if !ok {
-		return 0, fmt.Errorf("field not found: %s", field)
-	}
-	query += fmt.Sprintf(" AND %s = $%d", UserIdDbFieldName, idx)
-	args = append(args, fieldVal.Interface())
-
 	for _, field := range fields {
-		dbFieldName := mapNameToDb[field]
+		dbFieldName, ok := mapNameToDb[field]
 		if !ok {
 			return 0, fmt.Errorf("field not found: %s", field)
 		}
@@ -87,6 +76,10 @@ func (r *CustomerSubscriptionRepository) TotalCost(ctx context.Context, tx *sql.
 		case field == "EndDate":
 			idx++
 			query += fmt.Sprintf(" AND %s <= $%d", dbFieldName, idx)
+			args = append(args, fieldVal.Interface())
+		default:
+			idx++
+			query += fmt.Sprintf(" AND %s = $%d", dbFieldName, idx)
 			args = append(args, fieldVal.Interface())
 		}
 

@@ -12,7 +12,8 @@ func (s *CustomerSubscriptionService) List(dto *customerBrokerContract.CustomerS
 	ctx, cancel := context.WithTimeout(context.Background(), 500000*time.Millisecond)
 	defer cancel()
 
-	entities, err := s.repo.ListWithTx(ctx, *dto.UserID)
+	mask := s.decoder.BuildUpdateMask(dto)
+	entities, err := s.repo.ListWithTx(ctx, dto, mask)
 
 	var list []customerBrokerContract.CustomerSubscription
 	for _, entity := range entities {

@@ -93,10 +93,10 @@ const (
 // CustomerSubscriptionIDRequest as request
 
 type CustomerSubscriptionTotalCostRequest struct {
-	UserID      string  `json:"user_id" validate:"required,uuid"`
+	UserID      *string `json:"user_id,omitempty" validate:"required,uuid"`
 	ServiceName *string `json:"service_name,omitempty"`
-	StartDate   *string `json:"start_date,omitempty"`
-	EndDate     *string `json:"end_date,omitempty"`
+	StartDate   *string `json:"start_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`
+	EndDate     *string `json:"end_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`
 }
 
 type CustomerSubscriptionTotalCostResponse struct {
