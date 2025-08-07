@@ -1,6 +1,18 @@
 package customerDomainContract
 
-import uuid "github.com/google/uuid"
+import (
+	uuid "github.com/google/uuid"
+	"project1.v0/contracts/domain"
+)
+
+type SubscriptionSortField string
+
+const (
+	SubscriptionSortFieldServiceName SubscriptionSortField = "service_name"
+	SubscriptionSortFieldStartDate   SubscriptionSortField = "start_date"
+	SubscriptionSortFieldEndDate     SubscriptionSortField = "end_date"
+	SubscriptionSortFieldPrice       SubscriptionSortField = "price"
+)
 
 type CustomerSubscriptionIDRequest struct {
 	ID string `json:"id" db:"id"`
@@ -18,6 +30,8 @@ type CustomerSubscriptionsListRequest struct {
 	Limit  *int
 	Offset *int
 
-	SortBy    *string `json:"sort_by,omitempty"`
-	SortOrder *string `json:"sort_order,omitempty"`
+	Sort []struct {
+		Field     SubscriptionSortField `json:"field" validate:"required,oneof=service_name start_date end_date price"`
+		Direction domain.SortDirection  `json:"direction" validate:"required,oneof=asc desc"`
+	} `json:"sort,omitempty" validate:"omitempty,dive"`
 }
