@@ -6,7 +6,10 @@ replace project1.v0/contracts/domain => ../../domain/
 
 require github.com/swaggo/swag v1.16.6
 
-require project1.v0/contracts/domain v0.0.0
+require (
+	github.com/google/uuid v1.6.0
+	project1.v0/contracts/domain v0.0.0
+)
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect

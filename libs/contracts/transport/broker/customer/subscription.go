@@ -1,5 +1,7 @@
 package customerBrokerContract
 
+import uuid "github.com/google/uuid"
+
 // /////////////
 // CREATE Subscription
 const (
@@ -64,15 +66,19 @@ const (
 )
 
 type CustomerSubscriptionsListRequest struct {
-	UserID      *string `json:"user_id,omitempty" validate:"omitempty,uuid"`
-	ServiceName *string `json:"service_name,omitempty"`
-	StartDate   *string `json:"start_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`
-	EndDate     *string `json:"end_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`
-	PriceFrom   *int    `json:"price_from,omitempty" validate:"omitempty,min=0"`
-	PriceTo     *int    `json:"price_to,omitempty" validate:"omitempty,min=0"`
+	UserID      *string      `json:"user_id,omitempty" validate:"omitempty,uuid"`
+	UserIDs     *[]uuid.UUID `json:"user_ids,omitempty" validate:"omitempty,dive,uuid"`
+	ServiceName *string      `json:"service_name,omitempty"`
+	StartDate   *string      `json:"start_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`
+	EndDate     *string      `json:"end_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`
+	PriceFrom   *int         `json:"price_from,omitempty" validate:"omitempty,min=0"`
+	PriceTo     *int         `json:"price_to,omitempty" validate:"omitempty,min=0"`
 
 	Limit  *int `json:"limit,omitempty" validate:"omitempty"`
 	Offset *int `json:"offset,omitempty" validate:"omitempty"`
+
+	SortBy    *string `json:"sort_by,omitempty"`
+	SortOrder *string `json:"sort_order,omitempty"`
 }
 
 type CustomerSubscriptionsListResponse struct {

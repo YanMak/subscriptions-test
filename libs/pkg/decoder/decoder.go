@@ -95,6 +95,25 @@ func defaultSetter(t reflect.Type) func(reflect.Value, string) error {
 		}
 	}
 
+	if t.Kind() == reflect.Slice {
+		elem := t.Elem()
+		if elem == reflect.TypeOf(uuid.UUID{}) {
+			return func(v reflect.Value, s string) error {
+				parts := strings.Split(s, ",")
+				res := make([]uuid.UUID, len(parts))
+				for i, part := range parts {
+					u, err := uuid.Parse(strings.TrimSpace(part))
+					if err != nil {
+						return err
+					}
+					res[i] = u
+				}
+				v.Set(reflect.ValueOf(res))
+				return nil
+			}
+		}
+	}
+
 	switch t {
 	case reflect.TypeOf(""):
 		return func(v reflect.Value, s string) error {

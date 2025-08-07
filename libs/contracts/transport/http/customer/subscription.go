@@ -1,5 +1,9 @@
 package customerHttpContract
 
+import (
+	"github.com/google/uuid"
+)
+
 // ///////
 // CREATE
 
@@ -48,14 +52,18 @@ type CustomerSubscriptionUpdatePath struct {
 // ///////
 // List
 type SubscriptionListQuery struct {
-	UserID      *string `query:"user_id,omitempty" validate:"omitempty,uuid"`
-	ServiceName *string `query:"service_name,omitempty" validate:"omitempty"`
+	UserID  *string      `query:"user_id,omitempty" validate:"omitempty,uuid"`
+	UserIDs *[]uuid.UUID `query:"user_ids,omitempty" validate:"omitempty,dive,uuid4"`
+
+	ServiceName *string `query:"service_name,omitempty" validate:"omitempty"` // ?user_ids=uuid1,uuid2,...
 	StartDate   *string `query:"start_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`
 	EndDate     *string `query:"end_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`
 	PriceFrom   *int    `query:"price_from,omitempty" validate:"omitempty,min=0"`
 	PriceTo     *int    `query:"price_to,omitempty" validate:"omitempty,min=0"`
 	Limit       *int    `query:"limit,omitempty" validate:"omitempty,min=1,max=100"`
 	Offset      *int    `query:"offset,omitempty" validate:"omitempty,min=0"`
+	SortBy      *string `query:"sort_by" validate:"omitempty,oneof=price start_date end_date"`
+	SortOrder   *string `query:"sort_order" validate:"omitempty,oneof=asc desc"`
 }
 
 /////////
