@@ -112,6 +112,30 @@ func defaultSetter(t reflect.Type) func(reflect.Value, string) error {
 				return nil
 			}
 		}
+
+		if elem.Kind() == reflect.Struct && elem.NumField() == 2 {
+			f1 := elem.Field(0)
+			f2 := elem.Field(1)
+			if f1.Name == "Field" && f1.Type == reflect.TypeOf("") &&
+				f2.Name == "Direction" && f2.Type == reflect.TypeOf("") {
+				return func(v reflect.Value, s string) error {
+					parts := strings.Split(s, ",")
+					res := reflect.MakeSlice(t, len(parts), len(parts))
+					for i, part := range parts {
+						pair := strings.Split(part, ":")
+						if len(pair) != 2 {
+							return fmt.Errorf("invalid sort format")
+						}
+						elemVal := reflect.New(elem).Elem()
+						elemVal.Field(0).SetString(strings.TrimSpace(pair[0]))
+						elemVal.Field(1).SetString(strings.TrimSpace(pair[1]))
+						res.Index(i).Set(elemVal)
+					}
+					v.Set(res)
+					return nil
+				}
+			}
+		}
 	}
 
 	switch t {

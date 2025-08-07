@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	domainContract "project1.v0/contracts/domain"
+	customerDomainContract "project1.v0/contracts/domain/customer"
 	customerBrokerContract "project1.v0/contracts/transport/broker/customer"
 	conv "project1.v0/mappers/conv"
 )
@@ -12,8 +14,33 @@ func (s *CustomerSubscriptionService) List(dto *customerBrokerContract.CustomerS
 	ctx, cancel := context.WithTimeout(context.Background(), 500000*time.Millisecond)
 	defer cancel()
 
-	mask := s.decoder.BuildUpdateMask(dto)
-	entities, err := s.repo.ListWithTx(ctx, dto, mask)
+	domainDto := &customerDomainContract.CustomerSubscriptionsListRequest{
+		UserID:      dto.UserID,
+		UserIDs:     dto.UserIDs,
+		ServiceName: dto.ServiceName,
+		StartDate:   dto.StartDate,
+		EndDate:     dto.EndDate,
+		PriceFrom:   dto.PriceFrom,
+		PriceTo:     dto.PriceTo,
+		Limit:       dto.Limit,
+		Offset:      dto.Offset,
+	}
+
+	if dto.SortBy != nil {
+		direction := domainContract.SortASC
+		if dto.SortOrder != nil {
+			direction = domainContract.SortDirection(*dto.SortOrder)
+		}
+		domainDto.Sort = append(domainDto.Sort, struct {
+			Field     customerDomainContract.SubscriptionSortField `json:"field" validate:"required,oneof=service_name start_date end_date price"`
+			Direction domainContract.SortDirection                 `json:"direction" validate:"required,oneof=asc desc"`
+		}{
+			Field:     customerDomainContract.SubscriptionSortField(*dto.SortBy),
+			Direction: direction,
+		})
+	}
+
+	entities, err := s.repo.ListWithTx(ctx, domainDto)
 
 	var list []customerBrokerContract.CustomerSubscription
 	for _, entity := range entities {

@@ -77,8 +77,10 @@ type CustomerSubscriptionsListRequest struct {
 	Limit  *int `json:"limit,omitempty" validate:"omitempty"`
 	Offset *int `json:"offset,omitempty" validate:"omitempty"`
 
-	SortBy    *string `json:"sort_by,omitempty"`
-	SortOrder *string `json:"sort_order,omitempty"`
+	Sort []struct {
+		Field     string `json:"field"`
+		Direction string `json:"direction"`
+	} `json:"sort,omitempty"`
 }
 
 type CustomerSubscriptionsListResponse struct {

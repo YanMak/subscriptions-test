@@ -30,3 +30,31 @@ func TestDefaultSetterUUIDSlice(t *testing.T) {
 		t.Fatalf("unexpected ids slice: %v", q.IDs)
 	}
 }
+
+type querySort struct {
+	Sort []struct {
+		Field     string
+		Direction string
+	} `query:"sort"`
+}
+
+func TestDefaultSetterSortSlice(t *testing.T) {
+	values := url.Values{}
+	values.Set("sort", "price:asc,start_date:desc")
+
+	var q querySort
+	d := NewDecoderService(DecoderServiceDeps{})
+	if err := d.MapQueryToStruct(values, &q); err != nil {
+		t.Fatalf("MapQueryToStruct returned error: %v", err)
+	}
+
+	if len(q.Sort) != 2 {
+		t.Fatalf("expected 2 sort items, got %d", len(q.Sort))
+	}
+	if q.Sort[0].Field != "price" || q.Sort[0].Direction != "asc" {
+		t.Fatalf("unexpected first sort item: %#v", q.Sort[0])
+	}
+	if q.Sort[1].Field != "start_date" || q.Sort[1].Direction != "desc" {
+		t.Fatalf("unexpected second sort item: %#v", q.Sort[1])
+	}
+}
