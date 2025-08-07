@@ -78,9 +78,9 @@ type CustomerSubscriptionsListRequest struct {
 	Offset *int `json:"offset,omitempty" validate:"omitempty"`
 
 	Sort []struct {
-		Field     string `json:"field"`
-		Direction string `json:"direction"`
-	} `json:"sort,omitempty"`
+		Field     string `json:"field" validate:"required,oneof=service_name start_date end_date price"`
+		Direction string `json:"direction" validate:"required,oneof=asc desc"`
+	} `json:"sort,omitempty" validate:"omitempty,dive"`
 }
 
 type CustomerSubscriptionsListResponse struct {

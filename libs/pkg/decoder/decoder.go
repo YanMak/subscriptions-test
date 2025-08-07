@@ -116,8 +116,8 @@ func defaultSetter(t reflect.Type) func(reflect.Value, string) error {
 		if elem.Kind() == reflect.Struct && elem.NumField() == 2 {
 			f1 := elem.Field(0)
 			f2 := elem.Field(1)
-			if f1.Name == "Field" && f1.Type == reflect.TypeOf("") &&
-				f2.Name == "Direction" && f2.Type == reflect.TypeOf("") {
+			if f1.Name == "Field" && f1.Type.Kind() == reflect.String &&
+				f2.Name == "Direction" && f2.Type.Kind() == reflect.String {
 				return func(v reflect.Value, s string) error {
 					parts := strings.Split(s, ",")
 					res := reflect.MakeSlice(t, len(parts), len(parts))
@@ -126,9 +126,16 @@ func defaultSetter(t reflect.Type) func(reflect.Value, string) error {
 						if len(pair) != 2 {
 							return fmt.Errorf("invalid sort format")
 						}
+
+						field := strings.TrimSpace(pair[0])
+						direction := strings.TrimSpace(pair[1])
+						if direction != "asc" && direction != "desc" {
+							return fmt.Errorf("invalid sort direction: %s", direction)
+						}
+
 						elemVal := reflect.New(elem).Elem()
-						elemVal.Field(0).SetString(strings.TrimSpace(pair[0]))
-						elemVal.Field(1).SetString(strings.TrimSpace(pair[1]))
+						elemVal.Field(0).SetString(field)
+						elemVal.Field(1).SetString(direction)
 						res.Index(i).Set(elemVal)
 					}
 					v.Set(res)

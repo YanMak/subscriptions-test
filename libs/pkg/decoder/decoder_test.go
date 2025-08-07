@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	customerHttpContract "project1.v0/contracts/transport/http/customer"
+	validatorx "project1.v0/pkg/validator_x"
 )
 
 type queryIDs struct {
@@ -56,5 +58,32 @@ func TestDefaultSetterSortSlice(t *testing.T) {
 	}
 	if q.Sort[1].Field != "start_date" || q.Sort[1].Direction != "desc" {
 		t.Fatalf("unexpected second sort item: %#v", q.Sort[1])
+	}
+}
+
+func TestDefaultSetterSortSliceInvalidDirection(t *testing.T) {
+	values := url.Values{}
+	values.Set("sort", "price:up")
+
+	var q querySort
+	d := NewDecoderService(DecoderServiceDeps{})
+	if err := d.MapQueryToStruct(values, &q); err == nil {
+		t.Fatalf("expected error for invalid direction, got nil")
+	}
+}
+
+func TestSubscriptionListQueryInvalidField(t *testing.T) {
+	values := url.Values{}
+	values.Set("sort", "unknown:asc")
+
+	var q customerHttpContract.SubscriptionListQuery
+	d := NewDecoderService(DecoderServiceDeps{})
+	if err := d.MapQueryToStruct(values, &q); err != nil {
+		t.Fatalf("MapQueryToStruct returned error: %v", err)
+	}
+
+	v := validatorx.NewValidatorX()
+	if err := v.Struct(&q); err == nil {
+		t.Fatalf("expected validation error for invalid field, got nil")
 	}
 }

@@ -2,7 +2,6 @@ package customerDomainContract
 
 import (
 	uuid "github.com/google/uuid"
-	"project1.v0/contracts/domain"
 )
 
 type SubscriptionSortField string
@@ -13,6 +12,11 @@ const (
 	SubscriptionSortFieldEndDate     SubscriptionSortField = "end_date"
 	SubscriptionSortFieldPrice       SubscriptionSortField = "price"
 )
+
+// type Sort []struct {
+// 	Field     SubscriptionSortField `json:"field"`
+// 	Direction domain.SortDirection  `json:"direction"`
+// }
 
 type CustomerSubscriptionIDRequest struct {
 	ID string `json:"id" db:"id"`
@@ -31,7 +35,7 @@ type CustomerSubscriptionsListRequest struct {
 	Offset *int
 
 	Sort []struct {
-		Field     SubscriptionSortField `json:"field" validate:"required,oneof=service_name start_date end_date price"`
-		Direction domain.SortDirection  `json:"direction" validate:"required,oneof=asc desc"`
+		Field     string `json:"field" validate:"required,oneof=service_name start_date end_date price"`
+		Direction string `json:"direction" validate:"required,oneof=asc desc"`
 	} `json:"sort,omitempty" validate:"omitempty,dive"`
 }

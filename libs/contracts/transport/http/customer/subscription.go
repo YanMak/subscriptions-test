@@ -2,8 +2,6 @@ package customerHttpContract
 
 import (
 	"github.com/google/uuid"
-	"project1.v0/contracts/domain"
-	customerDomainContract "project1.v0/contracts/domain/customer"
 )
 
 // ///////
@@ -66,10 +64,15 @@ type SubscriptionListQuery struct {
 	Offset      *int    `query:"offset,omitempty" validate:"omitempty,min=0"`
 	// SortBy      *string `query:"sort_by" validate:"omitempty,oneof=price start_date end_date"`
 	// SortOrder   *string `query:"sort_order" validate:"omitempty,oneof=asc desc"`
+
+	// Sort []struct {
+	// 	Field     customerDomainContract.SubscriptionSortField `json:"field"`
+	// 	Direction domain.SortDirection                         `json:"direction"`
+	// } `query:"sort"`
 	Sort []struct {
-		Field     customerDomainContract.SubscriptionSortField `json:"field"`
-		Direction domain.SortDirection                         `json:"direction"`
-	} `query:"sort"`
+		Field     string `json:"field" validate:"required,oneof=service_name start_date end_date price"`
+		Direction string `json:"direction" validate:"required,oneof=asc desc"`
+	} `query:"sort" validate:"omitempty,dive"`
 }
 
 /////////
