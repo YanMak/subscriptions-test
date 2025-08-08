@@ -26,17 +26,13 @@ func (s *CustomerSubscriptionService) List(dto *customerBrokerContract.CustomerS
 		Offset:      dto.Offset,
 	}
 
-	if dto.SortBy != nil {
-		direction := domainContract.SortASC
-		if dto.SortOrder != nil {
-			direction = domainContract.SortDirection(*dto.SortOrder)
-		}
+	for _, srt := range dto.Sort {
 		domainDto.Sort = append(domainDto.Sort, struct {
 			Field     customerDomainContract.SubscriptionSortField `json:"field" validate:"required,oneof=service_name start_date end_date price"`
 			Direction domainContract.SortDirection                 `json:"direction" validate:"required,oneof=asc desc"`
 		}{
-			Field:     customerDomainContract.SubscriptionSortField(*dto.SortBy),
-			Direction: direction,
+			Field:     customerDomainContract.SubscriptionSortField(srt.Field),
+			Direction: domainContract.SortDirection(srt.Direction),
 		})
 	}
 
