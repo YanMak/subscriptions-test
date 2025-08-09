@@ -2,6 +2,7 @@ package decoder
 
 import (
 	"net/url"
+	"reflect"
 	"testing"
 
 	"github.com/google/uuid"
@@ -11,6 +12,11 @@ import (
 
 type queryIDs struct {
 	IDs []uuid.UUID `query:"ids"`
+}
+
+type priceRange struct {
+	PriceFrom int `db:"price"`
+	PriceTo   int `db:"price"`
 }
 
 func TestDefaultSetterUUIDSlice(t *testing.T) {
@@ -85,5 +91,18 @@ func TestSubscriptionListQueryInvalidField(t *testing.T) {
 	v := validatorx.NewValidatorX()
 	if err := v.Struct(&q); err == nil {
 		t.Fatalf("expected validation error for invalid field, got nil")
+	}
+}
+
+func TestGetStructMetaDuplicateTags(t *testing.T) {
+	d := NewDecoderService(DecoderServiceDeps{})
+
+	meta := d.GetStructMeta(reflect.TypeOf(priceRange{}))
+	if len(meta.Fields) != 2 {
+		t.Fatalf("expected 2 fields, got %d", len(meta.Fields))
+	}
+	fields := meta.FieldsByTag["db"]["price"]
+	if len(fields) != 2 {
+		t.Fatalf("expected 2 fields for tag price, got %d", len(fields))
 	}
 }

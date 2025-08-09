@@ -20,7 +20,7 @@ type FieldInfo struct {
 }
 
 type StructMeta struct {
-	FieldsByTag map[string]map[string]*FieldInfo // tagName -> tagValue -> FieldInfo
+	FieldsByTag map[string]map[string]*[]FieldInfo // tagName -> tagValue -> FieldInfo
 	Fields      []*FieldInfo
 }
 
@@ -34,7 +34,7 @@ func (m *DecoderService) GetStructMeta(t reflect.Type) *StructMeta {
 	}
 
 	meta := &StructMeta{
-		FieldsByTag: make(map[string]map[string]*FieldInfo),
+		FieldsByTag: make(map[string]map[string]*[]FieldInfo),
 		Fields:      make([]*FieldInfo, 0, t.NumField()),
 	}
 
@@ -65,9 +65,9 @@ func (m *DecoderService) GetStructMeta(t reflect.Type) *StructMeta {
 
 		for tagKey, tagVal := range tags {
 			if meta.FieldsByTag[tagKey] == nil {
-				meta.FieldsByTag[tagKey] = make(map[string]*FieldInfo)
+				meta.FieldsByTag[tagKey] = make(map[string]*[]FieldInfo)
 			}
-			meta.FieldsByTag[tagKey][tagVal] = fi
+			meta.FieldsByTag[tagKey][tagVal] = append(meta.FieldsByTag[tagKey][tagVal], fi)
 		}
 	}
 	m.typeCache.Store(t, meta)
@@ -76,8 +76,8 @@ func (m *DecoderService) GetStructMeta(t reflect.Type) *StructMeta {
 
 func (m *DecoderService) MustGetFieldByTag(t reflect.Type, tagKey, tagValue string) (*FieldInfo, error) {
 	meta := m.GetStructMeta(t)
-	if fi, ok := meta.FieldsByTag[tagKey][tagValue]; ok {
-		return fi, nil
+	if fis, ok := meta.FieldsByTag[tagKey][tagValue]; ok && len(fis) > 0 {
+		return fis[0], nil
 	}
 	return nil, fmt.Errorf("field with tag %s=\"%s\" not found in type %s", tagKey, tagValue, t.Name())
 }

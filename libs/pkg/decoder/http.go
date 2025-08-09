@@ -16,14 +16,16 @@ func (m *DecoderService) MapQueryToStruct(values url.Values, out any) error {
 	reflectedType := v.Type()
 	meta := m.GetStructMeta(reflectedType)
 
-	for tagVal, fi := range meta.FieldsByTag["query"] {
+	for tagVal, fis := range meta.FieldsByTag["query"] {
 		queryVal := values.Get(tagVal)
 		if queryVal == "" {
 			continue
 		}
-		field := v.Field(fi.Index)
-		if err := fi.SetFunc(field, queryVal); err != nil {
-			return fmt.Errorf("failed to set field %s: %w", fi.Name, err)
+		for _, fi := range fis {
+			field := v.Field(fi.Index)
+			if err := fi.SetFunc(field, queryVal); err != nil {
+				return fmt.Errorf("failed to set field %s: %w", fi.Name, err)
+			}
 		}
 	}
 	return nil
@@ -41,7 +43,7 @@ func (m *DecoderService) MapPathParamsToStruct(
 	v = v.Elem()
 	meta := m.GetStructMeta(v.Type())
 
-	for tagVal, fi := range meta.FieldsByTag["path"] {
+	for tagVal, fis := range meta.FieldsByTag["path"] {
 		//pathVal, ok := params[tagVal]
 		pathVal := r.PathValue(tagVal)
 		if pathVal == "" {
@@ -50,9 +52,11 @@ func (m *DecoderService) MapPathParamsToStruct(
 		// if !ok || pathVal == "" {
 		// 	continue
 		// }
-		field := v.Field(fi.Index)
-		if err := fi.SetFunc(field, pathVal); err != nil {
-			return fmt.Errorf("failed to set field %s: %w", fi.Name, err)
+		for _, fi := range fis {
+			field := v.Field(fi.Index)
+			if err := fi.SetFunc(field, pathVal); err != nil {
+				return fmt.Errorf("failed to set field %s: %w", fi.Name, err)
+			}
 		}
 	}
 	return nil
