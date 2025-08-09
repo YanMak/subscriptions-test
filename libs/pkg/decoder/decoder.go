@@ -76,7 +76,7 @@ func (m *DecoderService) GetStructMeta(t reflect.Type) *StructMeta {
 
 func (m *DecoderService) MustGetFieldByTag(t reflect.Type, tagKey, tagValue string) (*FieldInfo, error) {
 	meta := m.GetStructMeta(t)
-	if fis, ok := meta.FieldsByTag[tagKey][tagValue]; ok && len(fis) > 0 {
+	if fis, ok := meta.FieldsByTag[tagKey][tagValue]; ok && len(*fis) > 0 {
 		return fis[0], nil
 	}
 	return nil, fmt.Errorf("field with tag %s=\"%s\" not found in type %s", tagKey, tagValue, t.Name())

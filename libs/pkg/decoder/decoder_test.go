@@ -102,7 +102,7 @@ func TestGetStructMetaDuplicateTags(t *testing.T) {
 		t.Fatalf("expected 2 fields, got %d", len(meta.Fields))
 	}
 	fields := meta.FieldsByTag["db"]["price"]
-	if len(fields) != 2 {
-		t.Fatalf("expected 2 fields for tag price, got %d", len(fields))
+	if len(*fields) != 2 {
+		t.Fatalf("expected 2 fields for tag price, got %d", len(*fields))
 	}
 }

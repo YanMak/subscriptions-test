@@ -21,7 +21,7 @@ func (m *DecoderService) MapQueryToStruct(values url.Values, out any) error {
 		if queryVal == "" {
 			continue
 		}
-		for _, fi := range fis {
+		for _, fi := range *fis {
 			field := v.Field(fi.Index)
 			if err := fi.SetFunc(field, queryVal); err != nil {
 				return fmt.Errorf("failed to set field %s: %w", fi.Name, err)
@@ -52,7 +52,7 @@ func (m *DecoderService) MapPathParamsToStruct(
 		// if !ok || pathVal == "" {
 		// 	continue
 		// }
-		for _, fi := range fis {
+		for _, fi := range *fis {
 			field := v.Field(fi.Index)
 			if err := fi.SetFunc(field, pathVal); err != nil {
 				return fmt.Errorf("failed to set field %s: %w", fi.Name, err)
