@@ -76,20 +76,16 @@ func (r *CustomerSubscriptionRepository) List(
 
 		val := fieldVal.Elem().Interface()
 
-		idx := len(args) + 1
 		switch field {
 		case "ServiceName":
-			whereClauses = append(whereClauses, fmt.Sprintf("%s ILIKE $%d", dbFieldName, idx))
 			whereClauses = append(whereClauses, fmt.Sprintf("%s ILIKE $%d", dbFieldName, len(args)+1))
 			strVal, _ := val.(string)
 			args = append(args, fmt.Sprintf("%%%s%%", strVal))
 		case "StartDate":
-			whereClauses = append(whereClauses, fmt.Sprintf("%s >= $%d", dbFieldName, idx))
 			whereClauses = append(whereClauses, fmt.Sprintf("%s >= $%d", dbFieldName, len(args)+1))
 			strVal, _ := val.(string)
 			args = append(args, conv.ParseDate(strVal))
 		case "EndDate":
-			whereClauses = append(whereClauses, fmt.Sprintf("%s <= $%d", dbFieldName, idx))
 			whereClauses = append(whereClauses, fmt.Sprintf("%s <= $%d", dbFieldName, len(args)+1))
 			strVal, _ := val.(string)
 			args = append(args, conv.ParseDate(strVal))
@@ -104,11 +100,9 @@ func (r *CustomerSubscriptionRepository) List(
 			whereClauses = append(whereClauses, fmt.Sprintf("%s <= $%d", dbFieldName, len(args)+1))
 			args = append(args, val)
 		default:
-			whereClauses = append(whereClauses, fmt.Sprintf("%s=$%d", dbFieldName, idx))
 			whereClauses = append(whereClauses, fmt.Sprintf("%s=$%d", dbFieldName, len(args)+1))
 			args = append(args, val)
 		}
-		args = append(args, val)
 	}
 
 	if len(whereClauses) > 0 {

@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	domainContract "project1.v0/contracts/domain"
 	customerDomainContract "project1.v0/contracts/domain/customer"
 	customerBrokerContract "project1.v0/contracts/transport/broker/customer"
 	conv "project1.v0/mappers/conv"
@@ -28,11 +27,11 @@ func (s *CustomerSubscriptionService) List(dto *customerBrokerContract.CustomerS
 
 	for _, srt := range dto.Sort {
 		domainDto.Sort = append(domainDto.Sort, struct {
-			Field     customerDomainContract.SubscriptionSortField `json:"field" validate:"required,oneof=service_name start_date end_date price"`
-			Direction domainContract.SortDirection                 `json:"direction" validate:"required,oneof=asc desc"`
+			Field     string `json:"field" validate:"required,oneof=service_name start_date end_date price"`
+			Direction string `json:"direction" validate:"required,oneof=asc desc"`
 		}{
-			Field:     customerDomainContract.SubscriptionSortField(srt.Field),
-			Direction: domainContract.SortDirection(srt.Direction),
+			Field:     string(customerDomainContract.SubscriptionSortField(srt.Field)),
+			Direction: string(srt.Direction), // or string(domainContract.SortDirection(srt.Direction)) if SortDirection is defined
 		})
 	}
 
