@@ -49,7 +49,6 @@ func CustomerSubscriptionListRequest_HttpToBroker(dto *customerHttpContract.Subs
 		EndDate:   dto.EndDate,
 		PriceFrom: dto.PriceFrom,
 		PriceTo:   dto.PriceTo,
-		Sort:      dto.Sort,
 	}
 }
 

@@ -8,11 +8,11 @@ replace (
 	project1.v0/contracts/transport/broker => ../../../libs/contracts/transport/broker
 	project1.v0/contracts/transport/http => ../../../libs/contracts/transport/http
 	project1.v0/mappers/conv => ../../../libs/mappers/conv
-	project1.v0/mappers/dto_db => ../../../libs/mappers/dto_db
+	//project1.v0/mappers/dto_db => ../../../libs/mappers/dto_db
 	project1.v0/mappers/http_broker => ../../../libs/mappers/http_broker
 	project1.v0/pkg/db => ../../../libs/pkg/db
 	project1.v0/pkg/http => ../../../libs/pkg/http
-	project1.v0/pkg/meta => ../../../libs/pkg/meta
+	project1.v0/pkg/decoder => ../../../libs/pkg/decoder
 	project1.v0/pkg/validator_x => ../../../libs/pkg/validator-x
 
 )
@@ -29,7 +29,7 @@ require (
 	project1.v0/mappers/http_broker v0.0.0
 	project1.v0/pkg/db v0.0.0
 	project1.v0/pkg/http v0.0.0
-	project1.v0/pkg/meta v0.0.0 // indirect
+	project1.v0/pkg/decoder v0.0.0 
 	project1.v0/pkg/validator_x v0.0.0
 
 )

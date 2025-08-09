@@ -1,10 +1,12 @@
-module project1.v0/mappers/http_broker
+module project1.v0/mappers/broker_domain
 
 go 1.24.4
 
 replace project1.v0/mappers/conv => ../conv
 
 replace project1.v0/contracts/transport/broker => ../../contracts/transport/broker
+
+replace project1.v0/contracts/domain => ../../contracts/domain
 
 replace project1.v0/contracts/transport/http => ../../contracts/transport/http
 
@@ -14,6 +16,7 @@ require (
 	project1.v0/contracts/transport/broker v0.0.0
 	//project1.v0/mappers/conv v0.0.0
 	project1.v0/contracts/transport/http v0.0.0
+	project1.v0/contracts/domain v0.0.0
 )
 
 require (

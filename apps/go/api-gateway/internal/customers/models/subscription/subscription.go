@@ -40,6 +40,15 @@ func NewCustomerSubscription(deps NewCustomerSubscriptionDeps) *CustomerSubscrip
 	}
 }
 
+func (s *CustomerSubscription) UpdateUserID(userIDStr *string) error {
+	userID, err := uuid.Parse(*userIDStr)
+	if err != nil {
+		return err
+	}
+	s.UserID = userID
+	return nil
+}
+
 func (s *CustomerSubscription) UpdateServiceName(ServiceName *string) {
 	s.ServiceName = *ServiceName
 }

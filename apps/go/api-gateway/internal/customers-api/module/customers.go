@@ -7,6 +7,7 @@ import (
 	"project1.v0/api_gateway/internal/customers/di"
 
 	//"project1.v0/configs"
+	"project1.v0/pkg/decoder"
 	validatorХ "project1.v0/pkg/validator_x"
 )
 
@@ -15,6 +16,7 @@ type CustomerApiModuleDeps struct {
 	//*customerSubscriptionService.CustomerSubscriptionService
 	CustomerSubscriptionService di.ICustomerSubscriptionService
 	*validatorХ.ValidatorX
+	*decoder.DecoderService
 }
 
 type CustomerApiModule struct {
@@ -32,6 +34,7 @@ func NewCustomerApiModule(deps CustomerApiModuleDeps) *CustomerApiModule {
 			Router:                      deps.Router,
 			CustomerSubscriptionService: deps.CustomerSubscriptionService,
 			ValidatorX:                  deps.ValidatorX,
+			DecoderService:              deps.DecoderService,
 		},
 	)
 

@@ -10,7 +10,7 @@ replace project1.v0/contracts/transport/http => ../../contracts/transport/http
 
 replace project1.v0/pkg/validator_x => ../validator-x
 
-replace project1.v0/pkg/meta => ../meta
+replace project1.v0/pkg/decoder => ../decoder
 
 require (
 	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
@@ -22,6 +22,6 @@ require (
 	golang.org/x/sys v0.30.0 // indirect
 	golang.org/x/text v0.22.0 // indirect
 	project1.v0/contracts/transport/http v0.0.0
-	project1.v0/pkg/meta v0.0.0
+	project1.v0/pkg/decoder v0.0.0
 	project1.v0/pkg/validator_x v0.0.0
 )

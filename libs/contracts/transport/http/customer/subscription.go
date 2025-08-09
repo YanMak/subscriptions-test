@@ -1,5 +1,9 @@
 package customerHttpContract
 
+import (
+	"github.com/google/uuid"
+)
+
 // ///////
 // CREATE
 
@@ -9,15 +13,6 @@ type CustomerSubscriptionCreateRequest struct {
 	UserID      string  `json:"user_id" validate:"required,uuid"`                            // @example "60601fee-2bf1-4721-ae6f-7636e79a0cba"
 	StartDate   string  `json:"start_date" validate:"required,date_format_mm_yyyy"`          // @example "07-2025"
 	EndDate     *string `json:"end_date,omitempty" validate:"omitempty,date_format_mm_yyyy"` // @example "07-2026"
-}
-
-type CustomerSubscriptionCreateQuery struct { // @example 400
-	UserID    *string `query:"user_id,omitempty" validate:"omitempty,uuid"`                   // @example "60601fee-2bf1-4721-ae6f-7636e79a0cba"
-	StartDate *string `query:"start_date,omitempty" validate:"omitempty,date_format_mm_yyyy"` // @example "07-2025"
-}
-type CustomerSubscriptionCreatePath struct { // @example 400
-	UserID    *string `path:"user_id,omitempty" validate:"omitempty,uuid"`                   // @example "60601fee-2bf1-4721-ae6f-7636e79a0cba"
-	StartDate *string `path:"start_date,omitempty" validate:"omitempty,date_format_mm_yyyy"` // @example "07-2025"
 }
 
 type CustomerSubscriptionCreateResponse struct {
@@ -43,21 +38,41 @@ type CustomerSubscriptionUpdateRequest struct {
 	StartDate   *string `json:"start_date,omitempty" validate:"omitempty,date_format_mm_yyyy"` // @example "07-2025"
 	EndDate     *string `json:"end_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`   // @example "07-2026"
 }
-type CustomerSubscriptionUpdateQuery struct { // @example 400
-	ID *string `query:"id" validate:"uuid"` // @example
+type CustomerSubscriptionUpdatePath struct {
+	ID *string `path:"id" validate:"uuid"` //
 }
+
+// type CustomerSubscriptionUpdateQuery struct {
+// 	UserID    *string `query:"user_id" validate:"uuid"`                                       // @example "60601fee-2bf1-4721-ae6f-7636e79a0cba"
+// 	StartDate *string `query:"start_date,omitempty" validate:"omitempty,date_format_mm_yyyy"` // @example "07-2025"
+// }
 
 // Response is empty
 
 // ///////
 // List
 type SubscriptionListQuery struct {
-	UserID      string  `json:"user_id" validate:"required,uuid"`
-	ServiceName *string `json:"service_name,omitempty" validate:"omitempty"`
-	StartDate   *string `json:"start_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`
-	EndDate     *string `json:"end_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`
-	Limit       *int    `json:"limit,omitempty" validate:"omitempty,min=1,max=100"`
-	Offset      *int    `json:"offset,omitempty" validate:"omitempty,min=0"`
+	UserID  *string      `query:"user_id,omitempty" validate:"omitempty,uuid"`
+	UserIDs *[]uuid.UUID `query:"user_ids,omitempty" validate:"omitempty,dive,uuid4"`
+
+	ServiceName *string `query:"service_name,omitempty" validate:"omitempty"` // ?user_ids=uuid1,uuid2,...
+	StartDate   *string `query:"start_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`
+	EndDate     *string `query:"end_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`
+	PriceFrom   *int    `query:"price_from,omitempty" validate:"omitempty,min=0"`
+	PriceTo     *int    `query:"price_to,omitempty" validate:"omitempty,min=0"`
+	Limit       *int    `query:"limit,omitempty" validate:"omitempty,min=1,max=100"`
+	Offset      *int    `query:"offset,omitempty" validate:"omitempty,min=0"`
+	// SortBy      *string `query:"sort_by" validate:"omitempty,oneof=price start_date end_date"`
+	// SortOrder   *string `query:"sort_order" validate:"omitempty,oneof=asc desc"`
+
+	// Sort []struct {
+	// 	Field     customerDomainContract.SubscriptionSortField `json:"field"`
+	// 	Direction domain.SortDirection                         `json:"direction"`
+	// } `query:"sort"`
+	Sort []struct {
+		Field     string `json:"field" validate:"required,oneof=service_name start_date end_date price"`
+		Direction string `json:"direction" validate:"required,oneof=asc desc"`
+	} `query:"sort" validate:"omitempty,dive"`
 }
 
 /////////
@@ -65,17 +80,23 @@ type SubscriptionListQuery struct {
 
 // @Description Aggregate request: subscriptions sum
 // @name SubscriptionAggregateRequest
-type SubscriptionTotalRequest struct {
-	UserID      string `json:"user_id"`
-	ServiceName string `json:"service_name"`
-	StartDate   string `json:"start_date"`
-	EndDate     string `json:"end_date"`
+type SubscriptionTotalQuery struct {
+	UserID      *string `query:"user_id" validate:"required,uuid"`
+	ServiceName *string `query:"service_name,omitempty" validate:"omitempty"`
+	StartDate   *string `query:"start_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`
+	EndDate     *string `query:"end_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`
+	PriceFrom   *int    `query:"price_from,omitempty" validate:"omitempty,min=0"`
+	PriceTo     *int    `query:"price_to,omitempty" validate:"omitempty,min=0"`
 }
 
 // @Description Aggregate response: сумма
 // @name SubscriptionAggregateResponse
 type SubscriptionTotalResponse struct {
 	Total int `json:"total"` // Суммарная стоимость подписок (за период, по фильтрам)
+}
+
+type CustomerSubscriptionIDPath struct {
+	ID *string `path:"id" validate:"uuid"` //
 }
 
 // ErrorResponse — commonly used struct for err

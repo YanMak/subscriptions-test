@@ -1,11 +1,10 @@
-package meta
+package decoder
 
 import (
 	"fmt"
-	"net/url"
 	"reflect"
+	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -21,23 +20,21 @@ type FieldInfo struct {
 }
 
 type StructMeta struct {
-	FieldsByTag map[string]map[string]*FieldInfo // tagName -> tagValue -> FieldInfo
+	FieldsByTag map[string]map[string][]*FieldInfo // tagName -> tagValue -> FieldInfo
 	Fields      []*FieldInfo
 }
 
-var typeCache sync.Map // reflect.Type -> *StructMeta
-
-func GetStructMeta(t reflect.Type) *StructMeta {
+func (m *DecoderService) GetStructMeta(t reflect.Type) *StructMeta {
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
 	}
 
-	if cached, ok := typeCache.Load(t); ok {
+	if cached, ok := m.typeCache.Load(t); ok {
 		return cached.(*StructMeta)
 	}
 
 	meta := &StructMeta{
-		FieldsByTag: make(map[string]map[string]*FieldInfo),
+		FieldsByTag: make(map[string]map[string][]*FieldInfo),
 		Fields:      make([]*FieldInfo, 0, t.NumField()),
 	}
 
@@ -68,19 +65,19 @@ func GetStructMeta(t reflect.Type) *StructMeta {
 
 		for tagKey, tagVal := range tags {
 			if meta.FieldsByTag[tagKey] == nil {
-				meta.FieldsByTag[tagKey] = make(map[string]*FieldInfo)
+				meta.FieldsByTag[tagKey] = make(map[string][]*FieldInfo)
 			}
-			meta.FieldsByTag[tagKey][tagVal] = fi
+			meta.FieldsByTag[tagKey][tagVal] = append(meta.FieldsByTag[tagKey][tagVal], fi)
 		}
 	}
-	typeCache.Store(t, meta)
+	m.typeCache.Store(t, meta)
 	return meta
 }
 
-func MustGetFieldByTag(t reflect.Type, tagKey, tagValue string) (*FieldInfo, error) {
-	meta := GetStructMeta(t)
-	if fi, ok := meta.FieldsByTag[tagKey][tagValue]; ok {
-		return fi, nil
+func (m *DecoderService) MustGetFieldByTag(t reflect.Type, tagKey, tagValue string) (*FieldInfo, error) {
+	meta := m.GetStructMeta(t)
+	if fis, ok := meta.FieldsByTag[tagKey][tagValue]; ok && len(fis) > 0 {
+		return fis[0], nil
 	}
 	return nil, fmt.Errorf("field with tag %s=\"%s\" not found in type %s", tagKey, tagValue, t.Name())
 }
@@ -95,6 +92,56 @@ func defaultSetter(t reflect.Type) func(reflect.Value, string) error {
 			}
 			v.Set(ptr.Addr())
 			return nil
+		}
+	}
+
+	if t.Kind() == reflect.Slice {
+		elem := t.Elem()
+		if elem == reflect.TypeOf(uuid.UUID{}) {
+			return func(v reflect.Value, s string) error {
+				parts := strings.Split(s, ",")
+				res := make([]uuid.UUID, len(parts))
+				for i, part := range parts {
+					u, err := uuid.Parse(strings.TrimSpace(part))
+					if err != nil {
+						return err
+					}
+					res[i] = u
+				}
+				v.Set(reflect.ValueOf(res))
+				return nil
+			}
+		}
+
+		if elem.Kind() == reflect.Struct && elem.NumField() == 2 {
+			f1 := elem.Field(0)
+			f2 := elem.Field(1)
+			if f1.Name == "Field" && f1.Type.Kind() == reflect.String &&
+				f2.Name == "Direction" && f2.Type.Kind() == reflect.String {
+				return func(v reflect.Value, s string) error {
+					parts := strings.Split(s, ",")
+					res := reflect.MakeSlice(t, len(parts), len(parts))
+					for i, part := range parts {
+						pair := strings.Split(part, ":")
+						if len(pair) != 2 {
+							return fmt.Errorf("invalid sort format")
+						}
+
+						field := strings.TrimSpace(pair[0])
+						direction := strings.TrimSpace(pair[1])
+						if direction != "asc" && direction != "desc" {
+							return fmt.Errorf("invalid sort direction: %s", direction)
+						}
+
+						elemVal := reflect.New(elem).Elem()
+						elemVal.Field(0).SetString(field)
+						elemVal.Field(1).SetString(direction)
+						res.Index(i).Set(elemVal)
+					}
+					v.Set(res)
+					return nil
+				}
+			}
 		}
 	}
 
@@ -148,54 +195,10 @@ func defaultSetter(t reflect.Type) func(reflect.Value, string) error {
 }
 
 func parseInt(s string) (int64, error) {
-	var i int64
-	_, err := fmt.Sscanf(s, "%d", &i)
-	return i, err
+	return strconv.ParseInt(s, 10, 64)
+
 }
 
 func parseBool(s string) (bool, error) {
-	return s == "true" || s == "1", nil
-}
-
-func MapQueryToStruct(values url.Values, out any) error {
-	v := reflect.ValueOf(out)
-	if v.Kind() != reflect.Ptr || v.IsNil() {
-		return fmt.Errorf("output must be a non-nil pointer")
-	}
-	v = v.Elem()
-	reflectedType := v.Type()
-	meta := GetStructMeta(reflectedType)
-
-	for tagVal, fi := range meta.FieldsByTag["query"] {
-		queryVal := values.Get(tagVal)
-		if queryVal == "" {
-			continue
-		}
-		field := v.Field(fi.Index)
-		if err := fi.SetFunc(field, queryVal); err != nil {
-			return fmt.Errorf("failed to set field %s: %w", fi.Name, err)
-		}
-	}
-	return nil
-}
-
-func MapPathParamsToStruct(params map[string]string, out any) error {
-	v := reflect.ValueOf(out)
-	if v.Kind() != reflect.Ptr || v.IsNil() {
-		return fmt.Errorf("output must be a non-nil pointer")
-	}
-	v = v.Elem()
-	meta := GetStructMeta(v.Type())
-
-	for tagVal, fi := range meta.FieldsByTag["path"] {
-		pathVal, ok := params[tagVal]
-		if !ok || pathVal == "" {
-			continue
-		}
-		field := v.Field(fi.Index)
-		if err := fi.SetFunc(field, pathVal); err != nil {
-			return fmt.Errorf("failed to set field %s: %w", fi.Name, err)
-		}
-	}
-	return nil
+	return strconv.ParseBool(s)
 }

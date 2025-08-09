@@ -1,5 +1,7 @@
 package customerBrokerContract
 
+import uuid "github.com/google/uuid"
+
 // /////////////
 // CREATE Subscription
 const (
@@ -37,13 +39,16 @@ type CustomerSubscriptionUpdateResponse struct{}
 
 // /////////////
 // Get Subscription
+
+type CustomerSubscriptionIDRequest struct {
+	ID string `json:"id"`
+}
+
 const (
 	SubscriptionGetTopic = "customer.get-subscription.query"
 )
 
-type CustomerSubscriptionGetRequest struct {
-	ID string `json:"id"`
-}
+// CustomerSubscriptionIDRequest as request
 
 type CustomerSubscription struct {
 	ID          string  `json:"id" db:"id"`
@@ -61,12 +66,21 @@ const (
 )
 
 type CustomerSubscriptionsListRequest struct {
-	UserID      string  `json:"user_id" db:"user_id"`
-	ServiceName *string `json:"service_name,omitempty"`
-	StartDate   *string `json:"start_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`
-	EndDate     *string `json:"end_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`
-	Limit       *int    `json:"limit,omitempty" validate:"omitempty"`
-	Offset      *int    `json:"offset,omitempty" validate:"omitempty"`
+	UserID      *string      `json:"user_id,omitempty" validate:"omitempty,uuid"`
+	UserIDs     *[]uuid.UUID `json:"user_ids,omitempty" validate:"omitempty,dive,uuid"`
+	ServiceName *string      `json:"service_name,omitempty"`
+	StartDate   *string      `json:"start_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`
+	EndDate     *string      `json:"end_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`
+	PriceFrom   *int         `json:"price_from,omitempty" validate:"omitempty,min=0"`
+	PriceTo     *int         `json:"price_to,omitempty" validate:"omitempty,min=0"`
+
+	Limit  *int `json:"limit,omitempty" validate:"omitempty"`
+	Offset *int `json:"offset,omitempty" validate:"omitempty"`
+
+	Sort []struct {
+		Field     string `json:"field" validate:"required,oneof=service_name start_date end_date price"`
+		Direction string `json:"direction" validate:"required,oneof=asc desc"`
+	} `json:"sort,omitempty" validate:"omitempty,dive"`
 }
 
 type CustomerSubscriptionsListResponse struct {
@@ -79,10 +93,6 @@ const (
 	SubscriptionDeleteTopic = "customer.delete-subscription.command"
 )
 
-type CustomerSubscriptionDeleteRequest struct {
-	ID string `json:"id"`
-}
-
 type CustomerSubscriptionDeleteResponse struct{}
 
 // /////////////
@@ -91,11 +101,15 @@ const (
 	SubscriptionTotalCostTopic = "customer.total-cost-subscription.query"
 )
 
+// CustomerSubscriptionIDRequest as request
+
 type CustomerSubscriptionTotalCostRequest struct {
-	UserID      string  `json:"user_id" validate:"required,uuid"`
+	UserID      *string `json:"user_id,omitempty" validate:"required,uuid"`
 	ServiceName *string `json:"service_name,omitempty"`
-	StartDate   *string `json:"start_date,omitempty"`
-	EndDate     *string `json:"end_date,omitempty"`
+	StartDate   *string `json:"start_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`
+	EndDate     *string `json:"end_date,omitempty" validate:"omitempty,date_format_mm_yyyy"`
+	PriceFrom   *int    `json:"price_from,omitempty" validate:"omitempty,min=0"`
+	PriceTo     *int    `json:"price_to,omitempty" validate:"omitempty,min=0"`
 }
 
 type CustomerSubscriptionTotalCostResponse struct {
